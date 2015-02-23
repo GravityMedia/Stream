@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding" useUTFGuessing="true" native2AsciiForPropertiesFiles="false">
+    <file url="file://$PROJECT_DIR$/README.md" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/composer.json" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/phpunit.xml.dist" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/sami.config.php" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/AbstractStream.php" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/Exception/ExceptionInterface.php" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/Exception/RuntimeException.php" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/InputStream.php" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/OutputStream.php" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/tests/src/ID3v1/TagHandlerTest.php" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/tests/src/InputStreamTest.php" charset="UTF-8" />
+  </component>
+</project>
