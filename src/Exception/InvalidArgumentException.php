@@ -8,10 +8,10 @@
 namespace GravityMedia\Stream\Exception;
 
 /**
- * Runtime exception
+ * Invalid argument exception
  *
  * @package GravityMedia\Stream\Exception
  */
-class RuntimeException extends \RuntimeException implements ExceptionInterface
+class InvalidArgumentException extends \InvalidArgumentException implements ExceptionInterface
 {
 }
