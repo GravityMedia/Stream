@@ -7,6 +7,8 @@
 
 namespace GravityMedia\Stream;
 
+use GravityMedia\Stream\Exception;
+
 /**
  * Input stream
  *
@@ -15,34 +17,62 @@ namespace GravityMedia\Stream;
 class InputStream extends AbstractStream
 {
     /**
-     * Creates stream object
+     * The resource
+     *
+     * @var resource
+     */
+    protected $resource;
+
+    /**
+     * Creates a stream object
      *
      * @param resource $resource
+     *
+     * @throws Exception\InvalidArgumentException
      */
     public function __construct($resource)
     {
+        if (!is_resource($resource)) {
+            throw new Exception\InvalidArgumentException('Invalid stream argument');
+        }
         $this->resource = $resource;
     }
 
     /**
-     * Tests if data is available
+     * Get resource
      *
-     * @return bool
+     * @return resource
      */
-    public function isAvailable()
+    public function getResource()
     {
-        return !feof($this->resource);
+        return $this->resource;
     }
 
     /**
-     * Read data from the stream
+     * Tests if the end of the stream was reached
      *
-     * @param int $length
+     * @return bool
+     */
+    public function end()
+    {
+        return feof($this->getResource());
+    }
+
+    /**
+     * Read up to $length number of bytes of data from the stream
+     *
+     * @param int $length Up to length number of bytes (defaults to 1)
+     *
+     * @throws Exception\StreamException
      *
      * @return string
      */
-    public function read($length)
+    public function read($length = 1)
     {
-        return fread($this->resource, $length);
+        $data = fread($this->getResource(), $length);
+        if (false === $data) {
+            throw new Exception\StreamException('Unexpected result of stream operation');
+        }
+        return $data;
     }
 }
