@@ -7,10 +7,19 @@
     <file url="file://$PROJECT_DIR$/sami.config.php" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/AbstractStream.php" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/Exception/ExceptionInterface.php" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/src/Exception/RuntimeException.php" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/Exception/InvalidArgumentException.php" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/Exception/StreamException.php" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/FileInputStream.php" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/FileOutputStream.php" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/InputStream.php" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/OutputStream.php" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/tests/src/ID3v1/TagHandlerTest.php" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/StreamInterface.php" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/StreamMetadata.php" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/StreamStats.php" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/tests/src/FileInputStreamTest.php" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/tests/src/FileOutputStreamTest.php" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/tests/src/InputStreamTest.php" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/tests/src/OutputStreamTest.php" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/tests/src/StreamTestCase.php" charset="UTF-8" />
   </component>
 </project>
