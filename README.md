@@ -41,9 +41,11 @@ $ php composer.phar install
 
 ##Usage##
 
-Currently input/output streams for resources and files are implemented.
+Currently input/output streams for resources and files are implemented
 
 ###Resources###
+
+Pipe contents of input stream to output stream
 
 ```php
 require 'vendor/autoload.php';
@@ -51,10 +53,10 @@ require 'vendor/autoload.php';
 use GravityMedia\Stream\InputStream;
 use GravityMedia\Stream\OutputStream;
 
-// create new file input stream object
+// create new input stream object
 $inputStream = new InputStream(fopen('/path/to/input/file.bin', 'rb'));
 
-// create new file output stream object
+// create new output stream object
 $outputStream = new OutputStream(fopen('/path/to/output/file.bin', 'wb'));
 
 // Pipe input stream to output stream
@@ -64,6 +66,8 @@ while (!$inputStream->end()) {
 ```
 
 ###Files###
+
+Pipe contents of file input stream to file output stream
 
 ```php
 require 'vendor/autoload.php';
