@@ -8,7 +8,6 @@ Object oriented stream library for PHP
 [![Build](https://img.shields.io/travis/GravityMedia/Stream.svg)](https://travis-ci.org/GravityMedia/Stream)
 [![Code Quality](https://img.shields.io/scrutinizer/g/GravityMedia/Stream.svg)](https://scrutinizer-ci.com/g/GravityMedia/Stream/?branch=master)
 [![Coverage](https://img.shields.io/scrutinizer/coverage/g/GravityMedia/Stream.svg)](https://scrutinizer-ci.com/g/GravityMedia/Stream/?branch=master)
-[![PHP Dependencies](https://www.versioneye.com/user/projects/54a6c39d27b014005400004b/badge.svg)](https://www.versioneye.com/user/projects/54a6c39d27b014005400004b)
 
 ##Requirements##
 
@@ -42,20 +41,44 @@ $ php composer.phar install
 
 ##Usage##
 
+Currently input/output streams for resources and files are implemented.
+
+###Resources###
+
 ```php
 require 'vendor/autoload.php';
 
 use GravityMedia\Stream\InputStream;
+use GravityMedia\Stream\OutputStream;
 
-// create new input stream object
-$stream = new InputStream('/path/to/input/file.mp3');
+// create new file input stream object
+$inputStream = new InputStream(fopen('/path/to/input/file.bin', 'rb'));
 
-// read all the data
-$data = '';
-while ($stream->isAvailable()) {
-    $data .= $stream->read(1024);
+// create new file output stream object
+$outputStream = new OutputStream(fopen('/path/to/output/file.bin', 'wb'));
+
+// Pipe input stream to output stream
+while (!$inputStream->end()) {
+    $outputStream->write($inputStream->read());
 }
+```
 
-// dump the data
-var_dump($data);
+###Files###
+
+```php
+require 'vendor/autoload.php';
+
+use GravityMedia\Stream\FileInputStream;
+use GravityMedia\Stream\FileOutputStream;
+
+// create new file input stream object
+$inputStream = new FileInputStream('/path/to/input/file.bin');
+
+// create new file output stream object
+$outputStream = new FileOutputStream('/path/to/output/file.bin');
+
+// Pipe input stream to output stream
+while (!$inputStream->end()) {
+    $outputStream->write($inputStream->read());
+}
 ```
