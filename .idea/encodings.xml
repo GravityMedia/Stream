@@ -13,7 +13,6 @@
     <file url="file://$PROJECT_DIR$/src/FileOutputStream.php" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/InputStream.php" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/OutputStream.php" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/src/StreamInterface.php" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/StreamMetadata.php" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/StreamStats.php" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/tests/src/FileInputStreamTest.php" charset="UTF-8" />
