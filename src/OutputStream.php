@@ -63,4 +63,21 @@ class OutputStream extends AbstractStream
         }
         return $length;
     }
+
+    /**
+     * Truncates the stream to a given length
+     *
+     * @param int $size The size to truncate to
+     *
+     * @throws Exception\StreamException
+     *
+     * @return $this
+     */
+    public function truncate($size)
+    {
+        if (!ftruncate($this->getResource(), $size)) {
+            throw new Exception\StreamException('Unexpected result of stream operation');
+        }
+        return $this;
+    }
 }
