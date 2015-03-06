@@ -22,12 +22,14 @@ class OutputStreamTest extends StreamTestCase
      */
     public function testBasicAsserts()
     {
-        $resource = $this->createResource();
-        $stream = new OutputStream($resource);
+        $url = $this->createFile();
+        $stream = new OutputStream($url);
 
         $this->assertTrue(is_resource($stream->getResource()));
-        $this->assertEquals($resource, $stream->getResource());
+        $this->assertEquals($url, $stream->getResource());
         $this->assertTrue($stream->close());
+
+        unset($stream, $url);
     }
 
     /**
@@ -39,8 +41,8 @@ class OutputStreamTest extends StreamTestCase
      */
     public function testStream()
     {
-        $resource = $this->createResource();
-        $stream = new OutputStream($resource);
+        $url = $this->createFile();
+        $stream = new OutputStream($url);
 
         $length = 8192;
         $data = $this->createRandomData($length);
@@ -53,6 +55,8 @@ class OutputStreamTest extends StreamTestCase
         $this->assertEquals($offset, $stream->seek($offset));
 
         $this->assertTrue($stream->close());
+
+        unset($stream, $url);
     }
 
     /**
@@ -60,10 +64,12 @@ class OutputStreamTest extends StreamTestCase
      */
     public function testStreamStats()
     {
-        $resource = $this->createResource();
-        $stream = new OutputStream($resource);
+        $url = $this->createFile();
+        $stream = new OutputStream($url);
 
         $this->assertInstanceOf('GravityMedia\Stream\StreamStats', $stream->stats());
+
+        unset($stream, $url);
     }
 
     /**
@@ -71,9 +77,11 @@ class OutputStreamTest extends StreamTestCase
      */
     public function testStreamMetadata()
     {
-        $resource = $this->createResource();
-        $stream = new OutputStream($resource);
+        $url = $this->createFile();
+        $stream = new OutputStream($url);
 
         $this->assertInstanceOf('GravityMedia\Stream\StreamMetadata', $stream->metadata());
+
+        unset($stream, $url);
     }
 }

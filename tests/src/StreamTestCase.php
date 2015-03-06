@@ -7,6 +7,8 @@
 
 namespace GravityMedia\StreamTest;
 
+use League\Url\Url;
+
 /**
  * Stream test case
  *
@@ -15,11 +17,11 @@ namespace GravityMedia\StreamTest;
 class StreamTestCase extends \PHPUnit_Framework_TestCase
 {
     /**
-     * Create file
+     * Create test file
      *
      * @param string|null $data
      *
-     * @return string
+     * @return Url
      */
     protected function createFile($data = null)
     {
@@ -27,24 +29,7 @@ class StreamTestCase extends \PHPUnit_Framework_TestCase
         if (null !== $data) {
             file_put_contents($filename, $data);
         }
-        return $filename;
-    }
-
-    /**
-     * Create resource
-     *
-     * @param string|null $data
-     *
-     * @return resource
-     */
-    protected function createResource($data = null)
-    {
-        $resource = tmpfile();
-        if (null !== $data) {
-            fwrite($resource, $data);
-            fseek($resource, 0);
-        }
-        return $resource;
+        return Url::createFromUrl('file://' . $filename);
     }
 
     /**
