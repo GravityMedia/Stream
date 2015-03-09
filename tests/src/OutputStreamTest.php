@@ -19,17 +19,16 @@ class OutputStreamTest extends StreamTestCase
     /**
      * @covers \GravityMedia\Stream\OutputStream::__construct()
      * @covers \GravityMedia\Stream\OutputStream::getResource()
+     * @covers \GravityMedia\Stream\OutputStream::__destruct()
      */
     public function testBasicAsserts()
     {
-        $url = $this->createFile();
-        $stream = new OutputStream($url);
+        $stream = new OutputStream($this->createTempFile());
 
         $this->assertTrue(is_resource($stream->getResource()));
-        $this->assertEquals($url, $stream->getResource());
         $this->assertTrue($stream->close());
 
-        unset($stream, $url);
+        unset($stream);
     }
 
     /**
@@ -41,8 +40,7 @@ class OutputStreamTest extends StreamTestCase
      */
     public function testStream()
     {
-        $url = $this->createFile();
-        $stream = new OutputStream($url);
+        $stream = new OutputStream($this->createTempFile());
 
         $length = 8192;
         $data = $this->createRandomData($length);
@@ -56,7 +54,7 @@ class OutputStreamTest extends StreamTestCase
 
         $this->assertTrue($stream->close());
 
-        unset($stream, $url);
+        unset($stream);
     }
 
     /**
@@ -64,12 +62,11 @@ class OutputStreamTest extends StreamTestCase
      */
     public function testStreamStats()
     {
-        $url = $this->createFile();
-        $stream = new OutputStream($url);
+        $stream = new OutputStream($this->createTempFile());
 
         $this->assertInstanceOf('GravityMedia\Stream\StreamStats', $stream->stats());
 
-        unset($stream, $url);
+        unset($stream);
     }
 
     /**
@@ -77,11 +74,10 @@ class OutputStreamTest extends StreamTestCase
      */
     public function testStreamMetadata()
     {
-        $url = $this->createFile();
-        $stream = new OutputStream($url);
+        $stream = new OutputStream($this->createTempFile());
 
         $this->assertInstanceOf('GravityMedia\Stream\StreamMetadata', $stream->metadata());
 
-        unset($stream, $url);
+        unset($stream);
     }
 }

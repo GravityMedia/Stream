@@ -8,7 +8,7 @@
 namespace GravityMedia\Stream;
 
 use GravityMedia\Stream\Exception;
-use League\Url\UrlInterface;
+use GravityMedia\Uri\Uri;
 
 /**
  * Input stream
@@ -27,15 +27,15 @@ class InputStream extends AbstractStream
     /**
      * Creates a stream object
      *
-     * @param UrlInterface $url
+     * @param Uri $uri
      *
      * @throws Exception\InvalidArgumentException
      */
-    public function __construct(UrlInterface $url)
+    public function __construct(Uri $uri)
     {
-        $resource = fopen($url, 'rb');
+        $resource = fopen($uri, 'rb');
         if (!is_resource($resource)) {
-            throw new Exception\InvalidArgumentException('Invalid stream argument');
+            throw new Exception\InvalidArgumentException('Invalid URI argument');
         }
         $this->resource = $resource;
     }

@@ -7,7 +7,7 @@
 
 namespace GravityMedia\StreamTest;
 
-use League\Url\Url;
+use GravityMedia\Uri\Uri;
 
 /**
  * Stream test case
@@ -17,19 +17,13 @@ use League\Url\Url;
 class StreamTestCase extends \PHPUnit_Framework_TestCase
 {
     /**
-     * Create test file
+     * Create temp file and return its URI
      *
-     * @param string|null $data
-     *
-     * @return Url
+     * @return \GravityMedia\Uri\Uri
      */
-    protected function createFile($data = null)
+    protected function createTempFile()
     {
-        $filename = tempnam(sys_get_temp_dir(), strtoupper(uniqid()));
-        if (null !== $data) {
-            file_put_contents($filename, $data);
-        }
-        return Url::createFromUrl('file://' . $filename);
+        return Uri::fromString('file://' . tempnam(sys_get_temp_dir(), strtoupper(uniqid())));
     }
 
     /**
