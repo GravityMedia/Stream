@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "cfca0d6087dd8e1d1d7dc63657faa6d3",
+    "hash": "e98f91b9ab66011c9e0d22a368a6e476",
     "packages": [
         {
             "name": "gravitymedia/uri",

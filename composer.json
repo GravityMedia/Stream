@@ -10,7 +10,7 @@
     ],
     "require": {
         "php": ">=5.4",
-        "gravitymedia/uri": "0.1.*"
+        "gravitymedia/uri": "~0.1"
     },
     "require-dev": {
         "phpunit/phpunit": "~4.5",
