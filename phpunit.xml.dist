@@ -13,7 +13,7 @@
          verbose="true">
     <testsuites>
         <testsuite name="Stream test suite">
-            <directory>tests/src/</directory>
+            <directory>tests/</directory>
         </testsuite>
     </testsuites>
 

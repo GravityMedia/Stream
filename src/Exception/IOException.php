@@ -8,10 +8,10 @@
 namespace GravityMedia\Stream\Exception;
 
 /**
- * Stream exception
+ * IO exception
  *
  * @package GravityMedia\Stream\Exception
  */
-class StreamException extends \RuntimeException implements ExceptionInterface
+class IOException extends \RuntimeException implements ExceptionInterface
 {
 }
