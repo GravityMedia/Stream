@@ -13,108 +13,167 @@ use GravityMedia\Stream\Stream;
  * Stream test
  *
  * @package GravityMedia\Stream
+ * @covers  GravityMedia\Stream\Stream
  */
 class StreamTest extends \PHPUnit_Framework_TestCase
 {
     /**
-     * Create temp file and return its location
+     * Test that the constructor throws an exception for invalid URI argument
      *
-     * @return string
+     * @expectedException        \GravityMedia\Stream\Exception\IOException
+     * @expectedExceptionMessage Unexpected result of operation
      */
-    protected function createTempFile()
+    public function testConstructorThrowsExceptionOnInvalidUriArgument()
     {
-        return tempnam(sys_get_temp_dir(), strtoupper(uniqid()));
+        new Stream(false);
     }
 
     /**
-     * Create random data
-     *
-     * @param int $length
-     *
-     * @return string
+     * Test that the constructor internally binds the resource
      */
-    public function createRandomData($length)
+    public function testConstructorInternallyBindsResource()
     {
-        $data = '';
-        $dictionary = range("\x00", "\x7f");
-        $max = count($dictionary) - 1;
-        while (0 <= --$length) {
-            $data .= $dictionary[mt_rand(0, $max)];
-        }
-        return $data;
+        $streamMock = $this->getMockBuilder('GravityMedia\Stream\Stream')
+            ->disableOriginalConstructor()
+            ->setMethods(array('bind'))
+            ->getMock();
+
+        $streamMock->expects($this->once())
+            ->method('bind')
+            ->with($this->isType('resource'));
+
+        $reflectedClass = new \ReflectionClass('GravityMedia\Stream\Stream');
+        $constructor = $reflectedClass->getConstructor();
+        $constructor->invoke($streamMock, 'php://temp');
     }
 
     /**
-     * @covers \GravityMedia\Stream\Stream::__construct()
-     * @covers \GravityMedia\Stream\Stream::getResource()
-     * @covers \GravityMedia\Stream\Stream::__destruct()
+     * Test that the an exception is thrown for invalid resources
+     *
+     * @expectedException        \GravityMedia\Stream\Exception\InvalidArgumentException
+     * @expectedExceptionMessage Invalid resource argument
      */
-    public function testBasicAsserts()
+    public function testBindingInvalidResourceThrowsException()
     {
-        $stream = new Stream($this->createTempFile());
-
-        $this->assertTrue(is_resource($stream->getResource()));
-        $this->assertTrue($stream->close());
-
-        unset($stream);
+        $stream = new Stream();
+        $stream->bind(null);
     }
 
     /**
-     * @covers \GravityMedia\Stream\Stream::read()
-     * @covers \GravityMedia\Stream\Stream::tell()
-     * @covers \GravityMedia\Stream\Stream::eof()
-     * @covers \GravityMedia\Stream\Stream::rewind()
-     * @covers \GravityMedia\Stream\Stream::seek()
-     * @covers \GravityMedia\Stream\Stream::close()
+     * Test that a readable stream is readable
      */
-    public function testReadStream()
+    public function testReadableStreamIsReadable()
     {
-        $length = 8192;
-        $data = $this->createRandomData($length);
-        $uri = $this->createTempFile();
-        file_put_contents($uri, $data);
-        $offset = mt_rand(0, $length - 1);
+        $stream = new Stream('php://temp', 'rb');
 
-        $stream = new Stream($uri);
+        $this->assertTrue($stream->isReadable());
+    }
 
-        $this->assertEquals($data, $stream->read($length));
-        $this->assertEquals($length, $stream->tell());
+    /**
+     * Test that a writable stream is writable
+     */
+    public function testWritableStreamIsWritable()
+    {
+        $stream = new Stream('php://temp', 'wb');
 
-        $this->assertEmpty($stream->read());
+        $this->assertTrue($stream->isWritable());
+    }
+
+    /**
+     * Test that the resource setter initializes the meta data
+     */
+    public function testResourceSetterInitializesMetaData()
+    {
+        $uri = 'php://temp';
+        $stream = new Stream($uri, 'r+b');
+
+        $this->assertTrue($stream->isReadable());
+        $this->assertTrue($stream->isWritable());
+        $this->assertTrue($stream->isSeekable());
+        $this->assertEquals($uri, $stream->getUri());
+        $this->assertEquals(0, $stream->getSize());
+        $this->assertTrue($stream->isLocal());
+    }
+
+    /**
+     * Test that a stream returns the correct size
+     */
+    public function testStreamReturnsCorrectSize()
+    {
+        $contents = 'contents';
+        $stream = new Stream('php://temp', 'r+b');
+        $stream->write($contents);
+
+        $this->assertEquals(8, $stream->getSize());
+    }
+
+    /**
+     * Test that a stream returns its contents
+     */
+    public function testStreamReturnsContents()
+    {
+        $contents = 'contents';
+        $stream = new Stream('php://temp', 'r+b');
+        $stream->write($contents);
+        $stream->rewind();
+
+        $this->assertEquals($contents, $stream->getContents());
+    }
+
+    /**
+     * Test that the end of stream was reached
+     */
+    public function testReachEndOfStream()
+    {
+        $stream = new Stream('php://temp');
+        $stream->read();
+
         $this->assertTrue($stream->eof());
-
-        $this->assertEquals(0, $stream->rewind());
-        $this->assertEquals($offset, $stream->seek($offset));
-        $this->assertEquals($data{$offset}, $stream->read());
-
-        $this->assertTrue($stream->close());
-
-        unset($stream);
     }
 
     /**
-     * @covers \GravityMedia\Stream\Stream::write()
-     * @covers \GravityMedia\Stream\Stream::tell()
-     * @covers \GravityMedia\Stream\Stream::rewind()
-     * @covers \GravityMedia\Stream\Stream::seek()
-     * @covers \GravityMedia\Stream\Stream::close()
+     * Test that the position of the stream is returned
      */
-    public function testWriteStream()
+    public function testReturnPositionOfStream()
     {
-        $stream = new Stream($this->createTempFile());
+        $position = 4;
+        $stream = new Stream('php://temp', 'r+b');
+        $stream->write('contents');
+        $stream->seek($position);
 
-        $length = 8192;
-        $data = $this->createRandomData($length);
-        $offset = mt_rand(0, $length - 1);
+        $this->assertEquals($position, $stream->tell());
+    }
 
-        $this->assertEquals($length, $stream->write($data));
-        $this->assertEquals($length, $stream->tell());
+    /**
+     * Test that seeking the stream returns correct position
+     */
+    public function testSeekStream()
+    {
+        $stream = new Stream('php://temp', 'r+b');
+        $stream->write('contents');
+
+        $this->assertEquals(0, $stream->seek(-8, SEEK_END));
+    }
+
+    /**
+     * Test that rewinding the stream returns correct position
+     */
+    public function testRewindStream()
+    {
+        $stream = new Stream('php://temp', 'r+b');
+        $stream->write('contents');
 
         $this->assertEquals(0, $stream->rewind());
-        $this->assertEquals($offset, $stream->seek($offset));
+    }
 
-        $this->assertTrue($stream->close());
+    /**
+     * Tests that a stream can be truncated
+     */
+    public function testTruncateStream()
+    {
+        $stream = new Stream('php://temp', 'w+b');
+        $stream->truncate(8);
 
-        unset($stream);
+        $this->assertEquals(str_repeat("\x00", 8), $stream->getContents());
     }
 }

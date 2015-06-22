@@ -23,5 +23,13 @@
         "psr-4": {
             "GravityMedia\\StreamTest\\": "tests/"
         }
+    },
+    "archive": {
+        "exclude": [
+            "/.*",
+            "/composer.*",
+            "/phpunit.*",
+            "/tests"
+        ]
     }
 }

@@ -14,82 +14,75 @@ use GravityMedia\Stream\Exception;
  *
  * @package GravityMedia\Stream
  */
-class Stream
+class Stream implements StreamInterface
 {
     /**
-     * Read modes
-     *
      * @var string[]
      */
     protected static $readModes = array('r', 'w+', 'r+', 'x+', 'c+', 'rb', 'w+b', 'r+b', 'x+b', 'c+b', 'rt', 'w+t',
         'r+t', 'x+t', 'c+t', 'a+');
 
     /**
-     * Write modes
-     *
      * @var string[]
      */
     protected static $writeModes = array('w', 'w+', 'rw', 'r+', 'x+', 'c+', 'wb', 'w+b', 'r+b', 'x+b', 'c+b', 'w+t',
         'r+t', 'x+t', 'c+t', 'a', 'a+');
 
     /**
-     * Resource
-     *
-     * @var resource
-     */
-    protected $resource;
-
-    /**
-     * Readable
-     *
-     * @var boolean
+     * @var bool
      */
     protected $readable;
 
     /**
-     * Writable
-     *
-     * @var boolean
+     * @var bool
      */
     protected $writable;
 
     /**
-     * Seekable
-     *
-     * @var boolean
+     * @var bool
      */
     protected $seekable;
 
     /**
-     * URI
-     *
      * @var string
      */
     protected $uri;
 
     /**
-     * Local
-     *
-     * @var boolean
+     * @var bool
      */
     protected $local;
 
     /**
-     * Creates a stream object
-     *
-     * @param string $uri
-     * @param string $mode
-     *
-     * @throws Exception\InvalidArgumentException
+     * @var resource
      */
-    public function __construct($uri, $mode = 'rb+')
+    protected $resource;
+
+    /**
+     * @var int
+     */
+    protected $size;
+
+    /**
+     * Create a stream object
+     *
+     * @param string $uri  The URI which describes the stream (default is null; resource must be bound manually)
+     * @param string $mode The mode specifies the type of access you require to the stream (default is rb)
+     *
+     * @throws Exception\IOException An exception will be thrown when the stream could not be opened
+     */
+    public function __construct($uri = null, $mode = 'rb')
     {
-        $resource = fopen($uri, $mode);
-        if (!is_resource($resource)) {
-            throw new Exception\InvalidArgumentException('Invalid URL argument');
+        if (null === $uri) {
+            return;
         }
 
-        $this->setResource($resource);
+        $resource = @fopen($uri, $mode);
+        if (!is_resource($resource)) {
+            throw new Exception\IOException('Unexpected result of operation');
+        }
+
+        $this->bind($resource);
     }
 
     /**
@@ -100,40 +93,22 @@ class Stream
         if (is_resource($this->resource)) {
             $this->close();
         }
-
-        $this->resource = null;
     }
 
     /**
-     * Get resource
-     *
-     * @return resource
+     * @inheritdoc
      */
-    public function getResource()
-    {
-        return $this->resource;
-    }
-
-    /**
-     * Set resource
-     *
-     * @param resource $resource
-     *
-     * @throws Exception\InvalidArgumentException
-     *
-     * @return $this
-     */
-    public function setResource($resource)
+    public function bind($resource)
     {
         if (!is_resource($resource)) {
             throw new Exception\InvalidArgumentException('Invalid resource argument');
         }
 
-        $metaData = stream_get_meta_data($resource);
-        $this->readable = in_array($metaData['mode'], self::$readModes);
-        $this->writable = in_array($metaData['mode'], self::$writeModes);
-        $this->seekable = $metaData['seekable'];
-        $this->uri = $metaData['uri'];
+        $meta = stream_get_meta_data($resource);
+        $this->readable = in_array($meta['mode'], self::$readModes);
+        $this->writable = in_array($meta['mode'], self::$writeModes);
+        $this->seekable = $meta['seekable'];
+        $this->uri = $meta['uri'];
         $this->local = stream_is_local($resource);
         $this->resource = $resource;
 
@@ -141,76 +116,124 @@ class Stream
     }
 
     /**
-     * Get size
-     *
-     * @return int
+     * @inheritdoc
+     */
+    public function isReadable()
+    {
+        return $this->readable;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isWritable()
+    {
+        return $this->writable;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isSeekable()
+    {
+        return $this->seekable;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getUri()
+    {
+        return $this->uri;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isLocal()
+    {
+        return $this->local;
+    }
+
+    /**
+     * @inheritdoc
      */
     public function getSize()
     {
+        if (!$this->local) {
+            throw new Exception\BadMethodCallException('Operation not supported');
+        }
+
+        if (null !== $this->size) {
+            return $this->size;
+        }
+
         if ($this->uri) {
             clearstatcache(true, $this->uri);
         }
 
-        $statData = fstat($this->resource);
-        if (false === $statData) {
-            throw new Exception\IOException('Unexpected result of stream operation');
+        $stats = fstat($this->resource);
+        if (!isset($stats['size'])) {
+            throw new Exception\IOException('Unexpected result of operation');
         }
 
-        return $statData['size'];
+        $this->size = $stats['size'];
+
+        return $this->size;
     }
 
     /**
-     * Tests if the end of the stream was reached
-     *
-     * @return boolean
+     * @inheritdoc
+     */
+    public function getContents($length = -1, $offset = -1)
+    {
+        if (!$this->readable) {
+            throw new Exception\BadMethodCallException('Operation not supported');
+        }
+
+        $data = stream_get_contents($this->resource, $length, $offset);
+        if (false === $data) {
+            throw new Exception\IOException('Unexpected result of operation');
+        }
+
+        return $data;
+    }
+
+    /**
+     * @inheritdoc
      */
     public function eof()
     {
-        return feof($this->getResource());
+        return feof($this->resource);
     }
 
     /**
-     * Returns the current position of the stream
-     *
-     * @throws Exception\IOException
-     *
-     * @return int
+     * @inheritdoc
      */
     public function tell()
     {
-        $position = ftell($this->getResource());
+        $position = ftell($this->resource);
         if (false === $position) {
-            throw new Exception\IOException('Unexpected result of stream operation');
+            throw new Exception\IOException('Unexpected result of operation');
         }
 
         return $position;
     }
 
     /**
-     * Seeks and returns the position on the stream
-     *
-     * @param int $offset The offset
-     * @param int $whence Either SEEK_SET (default), SEEK_CUR or SEEK_END
-     *
-     * @throws Exception\IOException
-     *
-     * @return int
+     * @inheritdoc
      */
     public function seek($offset, $whence = SEEK_SET)
     {
-        if (fseek($this->getResource(), $offset, $whence) < 0) {
-            throw new Exception\IOException('Unexpected result of stream operation');
+        if (fseek($this->resource, $offset, $whence) < 0) {
+            throw new Exception\IOException('Unexpected result of operation');
         }
 
         return $this->tell();
     }
 
     /**
-     * Rewind the position of the stream
-     *
-     * @throws Exception\IOException
-     *
-     * @return int
+     * @inheritdoc
      */
     public function rewind()
     {
@@ -218,68 +241,65 @@ class Stream
     }
 
     /**
-     * Read up to $length number of bytes of data from the stream
-     *
-     * @param int $length Up to length number of bytes (defaults to 1)
-     *
-     * @throws Exception\IOException
-     *
-     * @return string
+     * @inheritdoc
      */
     public function read($length = 1)
     {
-        $data = fread($this->getResource(), $length);
+        if (!$this->readable) {
+            throw new Exception\BadMethodCallException('Operation not supported');
+        }
+
+        $data = fread($this->resource, $length);
         if (false === $data) {
-            throw new Exception\IOException('Unexpected result of stream operation');
+            throw new Exception\IOException('Unexpected result of operation');
         }
 
         return $data;
     }
 
     /**
-     * Write data to the stream and returns the number of bytes written
-     *
-     * @param string $data The data
-     *
-     * @throws Exception\IOException
-     *
-     * @return int
+     * @inheritdoc
      */
     public function write($data)
     {
-        $length = fwrite($this->getResource(), $data);
+        if (!$this->writable) {
+            throw new Exception\BadMethodCallException('Operation not supported');
+        }
+
+        // reset size because we don't know the size after the data was written
+        $this->size = null;
+
+        $length = fwrite($this->resource, $data);
         if (false === $length) {
-            throw new Exception\IOException('Unexpected result of stream operation');
+            throw new Exception\IOException('Unexpected result of operation');
         }
 
         return $length;
     }
 
     /**
-     * Truncates the stream to a given length
-     *
-     * @param int $size The size to truncate to
-     *
-     * @throws Exception\IOException
-     *
-     * @return $this
+     * @inheritdoc
      */
     public function truncate($size)
     {
-        if (!ftruncate($this->getResource(), $size)) {
-            throw new Exception\IOException('Unexpected result of stream operation');
+        if (!$this->writable) {
+            throw new Exception\BadMethodCallException('Operation not supported');
         }
+
+        if (!ftruncate($this->resource, $size)) {
+            throw new Exception\IOException('Unexpected result of operation');
+        }
+
+        $this->size = $size;
 
         return $this;
     }
 
     /**
-     * Close the stream
-     *
-     * @return boolean
+     * @inheritdoc
      */
     public function close()
     {
-        return fclose($this->getResource());
+        return fclose($this->resource);
     }
 }

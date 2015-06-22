@@ -1,6 +1,4 @@
 .idea/workspace.xml
-cache/
-docs/
 vendor/
 composer.phar
 coverage.clover
