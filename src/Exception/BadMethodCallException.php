@@ -8,10 +8,10 @@
 namespace GravityMedia\Stream\Exception;
 
 /**
- * Stream exception
+ * Bad method call exception
  *
  * @package GravityMedia\Stream\Exception
  */
-class StreamException extends \RuntimeException implements ExceptionInterface
+class BadMethodCallException extends \BadMethodCallException implements ExceptionInterface
 {
 }

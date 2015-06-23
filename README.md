@@ -41,48 +41,46 @@ $ php composer.phar install
 
 ##Usage##
 
-Currently input/output streams for resources and files are implemented
-
-###Resources###
-
-Pipe contents of input stream to output stream
+This is a simple usage example for character streams but is applicable for binary data streams.
 
 ```php
 require 'vendor/autoload.php';
 
-use GravityMedia\Stream\InputStream;
-use GravityMedia\Stream\OutputStream;
+use GravityMedia\Stream\Stream;
 
-// create new input stream object
-$inputStream = new InputStream(fopen('/path/to/input/file.bin', 'rb'));
+// create new stream object
+$stream = new Stream('php://temp', 'r+');
 
-// create new output stream object
-$outputStream = new OutputStream(fopen('/path/to/output/file.bin', 'wb'));
+// get stream writer object
+$writer = $stream->getWriter();
 
-// Pipe input stream to output stream
-while (!$inputStream->end()) {
-    $outputStream->write($inputStream->read());
+// write some random data
+$writer->write('some random data...');
+
+// truncate random data
+$writer->truncate(16);
+
+// rewind stream
+$stream->rewind();
+
+// get stream reader object
+$reader = $stream->getReader();
+
+// print "some random data"
+while (!$stream->eof()) {
+    print $reader->read();
 }
-```
+print PHP_EOL;
 
-###Files###
+// seek a position
+$stream->seek(5);
 
-Pipe contents of file input stream to file output stream
+// print position
+print $stream->tell() . PHP_EOL;
 
-```php
-require 'vendor/autoload.php';
-
-use GravityMedia\Stream\FileInputStream;
-use GravityMedia\Stream\FileOutputStream;
-
-// create new file input stream object
-$inputStream = new FileInputStream('/path/to/input/file.bin');
-
-// create new file output stream object
-$outputStream = new FileOutputStream('/path/to/output/file.bin');
-
-// Pipe input stream to output stream
-while (!$inputStream->end()) {
-    $outputStream->write($inputStream->read());
+// print "random data"
+while (!$stream->eof()) {
+    print $reader->read();
 }
+print PHP_EOL;
 ```
