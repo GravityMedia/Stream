@@ -21,7 +21,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      * Test that the constructor throws an exception for invalid URI argument
      *
      * @expectedException        \GravityMedia\Stream\Exception\IOException
-     * @expectedExceptionMessage Unexpected result of operation
+     * @expectedExceptionMessage Failed to open stream
      */
     public function testConstructorThrowsExceptionOnInvalidUriArgument()
     {
@@ -29,9 +29,9 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test that the constructor internally binds the resource
+     * Test that the constructor binds the resource
      */
-    public function testConstructorInternallyBindsResource()
+    public function testConstructorBindsResource()
     {
         $streamMock = $this->getMockBuilder('GravityMedia\Stream\Stream')
             ->disableOriginalConstructor()
@@ -44,11 +44,11 @@ class StreamTest extends \PHPUnit_Framework_TestCase
 
         $reflectedClass = new \ReflectionClass('GravityMedia\Stream\Stream');
         $constructor = $reflectedClass->getConstructor();
-        $constructor->invoke($streamMock, 'php://temp');
+        $constructor->invoke($streamMock, 'php://input');
     }
 
     /**
-     * Test that the an exception is thrown for invalid resources
+     * Test that the an exception is thrown when trying to bind an invalid resources
      *
      * @expectedException        \GravityMedia\Stream\Exception\InvalidArgumentException
      * @expectedExceptionMessage Invalid resource argument
@@ -60,23 +60,28 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test that a readable stream is readable
+     * Test that the resource is closed on destruct
      */
-    public function testReadableStreamIsReadable()
+    public function testStreamClosesResourceOnDestruct()
     {
-        $stream = new Stream('php://temp', 'rb');
+        $resource = fopen('php://input', 'r');
+        $stream = new Stream();
+        $stream->bind($resource);
+        unset($stream);
 
-        $this->assertTrue($stream->isReadable());
+        $this->assertFalse(is_resource($resource));
     }
 
     /**
-     * Test that a writable stream is writable
+     * Test that the stream returns the resource which was bound before
      */
-    public function testWritableStreamIsWritable()
+    public function testStreamReturnsResource()
     {
-        $stream = new Stream('php://temp', 'wb');
+        $resource = fopen('php://input', 'r');
+        $stream = new Stream();
+        $stream->bind($resource);
 
-        $this->assertTrue($stream->isWritable());
+        $this->assertEquals($resource, $stream->getResource());
     }
 
     /**
@@ -85,14 +90,68 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     public function testResourceSetterInitializesMetaData()
     {
         $uri = 'php://temp';
-        $stream = new Stream($uri, 'r+b');
+        $stream = new Stream($uri);
 
         $this->assertTrue($stream->isReadable());
-        $this->assertTrue($stream->isWritable());
+        $this->assertFalse($stream->isWritable());
         $this->assertTrue($stream->isSeekable());
         $this->assertEquals($uri, $stream->getUri());
         $this->assertEquals(0, $stream->getSize());
         $this->assertTrue($stream->isLocal());
+    }
+
+    /**
+     * Test that the reader getter throws an exception on non-readable streams
+     *
+     * @uses                     GravityMedia\Stream\StreamReader::__construct
+     *
+     * @expectedException        \GravityMedia\Stream\Exception\BadMethodCallException
+     * @expectedExceptionMessage Operation not supported
+     */
+    public function testReaderGetterThrowsExceptionOnNonReadableStreams()
+    {
+        $stream = new Stream('php://output', 'w');
+
+        $stream->getReader();
+    }
+
+    /**
+     * Test that a stream reader is returned
+     *
+     * @uses GravityMedia\Stream\StreamReader::__construct
+     */
+    public function testStreamReturnsReader()
+    {
+        $stream = new Stream('php://input', 'r');
+
+        $this->assertInstanceOf('GravityMedia\Stream\StreamReaderInterface', $stream->getReader());
+    }
+
+    /**
+     * Test that the writer getter throws an exception on non-writable streams
+     *
+     * @uses                     GravityMedia\Stream\StreamWriter::__construct
+     *
+     * @expectedException        \GravityMedia\Stream\Exception\BadMethodCallException
+     * @expectedExceptionMessage Operation not supported
+     */
+    public function testWriterGetterThrowsExceptionOnNonReadableStreams()
+    {
+        $stream = new Stream('php://input', 'r');
+
+        $stream->getWriter();
+    }
+
+    /**
+     * Test that a stream writer is returned
+     *
+     * @uses GravityMedia\Stream\StreamWriter::__construct
+     */
+    public function testStreamReturnsWriter()
+    {
+        $stream = new Stream('php://output', 'w');
+
+        $this->assertInstanceOf('GravityMedia\Stream\StreamWriterInterface', $stream->getWriter());
     }
 
     /**
@@ -101,23 +160,13 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     public function testStreamReturnsCorrectSize()
     {
         $contents = 'contents';
-        $stream = new Stream('php://temp', 'r+b');
-        $stream->write($contents);
+        $resource = fopen('php://temp', 'w');
+        fwrite($resource, $contents);
+
+        $stream = new Stream();
+        $stream->bind($resource);
 
         $this->assertEquals(8, $stream->getSize());
-    }
-
-    /**
-     * Test that a stream returns its contents
-     */
-    public function testStreamReturnsContents()
-    {
-        $contents = 'contents';
-        $stream = new Stream('php://temp', 'r+b');
-        $stream->write($contents);
-        $stream->rewind();
-
-        $this->assertEquals($contents, $stream->getContents());
     }
 
     /**
@@ -125,8 +174,11 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      */
     public function testReachEndOfStream()
     {
-        $stream = new Stream('php://temp');
-        $stream->read();
+        $resource = fopen('php://temp', 'r');
+        fread($resource, 1);
+
+        $stream = new Stream();
+        $stream->bind($resource);
 
         $this->assertTrue($stream->eof());
     }
@@ -137,9 +189,12 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     public function testReturnPositionOfStream()
     {
         $position = 4;
-        $stream = new Stream('php://temp', 'r+b');
-        $stream->write('contents');
-        $stream->seek($position);
+        $resource = fopen('php://temp', 'r+');
+        fwrite($resource, 'contents');
+        fseek($resource, $position);
+
+        $stream = new Stream();
+        $stream->bind($resource);
 
         $this->assertEquals($position, $stream->tell());
     }
@@ -149,8 +204,11 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      */
     public function testSeekStream()
     {
-        $stream = new Stream('php://temp', 'r+b');
-        $stream->write('contents');
+        $resource = fopen('php://temp', 'r+');
+        fwrite($resource, 'contents');
+
+        $stream = new Stream();
+        $stream->bind($resource);
 
         $this->assertEquals(0, $stream->seek(-8, SEEK_END));
     }
@@ -160,20 +218,12 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      */
     public function testRewindStream()
     {
-        $stream = new Stream('php://temp', 'r+b');
-        $stream->write('contents');
+        $resource = fopen('php://temp', 'r+');
+        fwrite($resource, 'contents');
+
+        $stream = new Stream();
+        $stream->bind($resource);
 
         $this->assertEquals(0, $stream->rewind());
-    }
-
-    /**
-     * Tests that a stream can be truncated
-     */
-    public function testTruncateStream()
-    {
-        $stream = new Stream('php://temp', 'w+b');
-        $stream->truncate(8);
-
-        $this->assertEquals(str_repeat("\x00", 8), $stream->getContents());
     }
 }

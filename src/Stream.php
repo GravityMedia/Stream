@@ -59,9 +59,14 @@ class Stream implements StreamInterface
     protected $resource;
 
     /**
-     * @var int
+     * @var StreamReaderInterface
      */
-    protected $size;
+    protected $reader;
+
+    /**
+     * @var StreamWriterInterface
+     */
+    protected $writer;
 
     /**
      * Create a stream object
@@ -79,7 +84,7 @@ class Stream implements StreamInterface
 
         $resource = @fopen($uri, $mode);
         if (!is_resource($resource)) {
-            throw new Exception\IOException('Unexpected result of operation');
+            throw new Exception\IOException('Failed to open stream');
         }
 
         $this->bind($resource);
@@ -111,8 +116,18 @@ class Stream implements StreamInterface
         $this->uri = $meta['uri'];
         $this->local = stream_is_local($resource);
         $this->resource = $resource;
+        $this->reader = null;
+        $this->writer = null;
 
         return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getResource()
+    {
+        return $this->resource;
     }
 
     /**
@@ -158,14 +173,42 @@ class Stream implements StreamInterface
     /**
      * @inheritdoc
      */
+    public function getReader()
+    {
+        if (null === $this->reader) {
+            try {
+                $this->reader = new StreamReader($this);
+            } catch (Exception\InvalidArgumentException $exception) {
+                throw new Exception\BadMethodCallException('Operation not supported', 0, $exception);
+            }
+        }
+
+        return $this->reader;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getWriter()
+    {
+        if (null === $this->writer) {
+            try {
+                $this->writer = new StreamWriter($this);
+            } catch (Exception\InvalidArgumentException $exception) {
+                throw new Exception\BadMethodCallException('Operation not supported', 0, $exception);
+            }
+        }
+
+        return $this->writer;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getSize()
     {
         if (!$this->local) {
             throw new Exception\BadMethodCallException('Operation not supported');
-        }
-
-        if (null !== $this->size) {
-            return $this->size;
         }
 
         if ($this->uri) {
@@ -177,26 +220,7 @@ class Stream implements StreamInterface
             throw new Exception\IOException('Unexpected result of operation');
         }
 
-        $this->size = $stats['size'];
-
-        return $this->size;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getContents($length = -1, $offset = -1)
-    {
-        if (!$this->readable) {
-            throw new Exception\BadMethodCallException('Operation not supported');
-        }
-
-        $data = stream_get_contents($this->resource, $length, $offset);
-        if (false === $data) {
-            throw new Exception\IOException('Unexpected result of operation');
-        }
-
-        return $data;
+        return $stats['size'];
     }
 
     /**
@@ -225,6 +249,10 @@ class Stream implements StreamInterface
      */
     public function seek($offset, $whence = SEEK_SET)
     {
+        if (!$this->seekable) {
+            throw new Exception\BadMethodCallException('Operation not supported');
+        }
+
         if (fseek($this->resource, $offset, $whence) < 0) {
             throw new Exception\IOException('Unexpected result of operation');
         }
@@ -238,61 +266,6 @@ class Stream implements StreamInterface
     public function rewind()
     {
         return $this->seek(0);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function read($length = 1)
-    {
-        if (!$this->readable) {
-            throw new Exception\BadMethodCallException('Operation not supported');
-        }
-
-        $data = fread($this->resource, $length);
-        if (false === $data) {
-            throw new Exception\IOException('Unexpected result of operation');
-        }
-
-        return $data;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function write($data)
-    {
-        if (!$this->writable) {
-            throw new Exception\BadMethodCallException('Operation not supported');
-        }
-
-        // reset size because we don't know the size after the data was written
-        $this->size = null;
-
-        $length = fwrite($this->resource, $data);
-        if (false === $length) {
-            throw new Exception\IOException('Unexpected result of operation');
-        }
-
-        return $length;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function truncate($size)
-    {
-        if (!$this->writable) {
-            throw new Exception\BadMethodCallException('Operation not supported');
-        }
-
-        if (!ftruncate($this->resource, $size)) {
-            throw new Exception\IOException('Unexpected result of operation');
-        }
-
-        $this->size = $size;
-
-        return $this;
     }
 
     /**
