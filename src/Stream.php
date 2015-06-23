@@ -215,7 +215,7 @@ class Stream implements StreamInterface
             clearstatcache(true, $this->uri);
         }
 
-        $stats = fstat($this->resource);
+        $stats = @fstat($this->resource);
         if (!isset($stats['size'])) {
             throw new Exception\IOException('Unexpected result of operation');
         }
@@ -236,7 +236,7 @@ class Stream implements StreamInterface
      */
     public function tell()
     {
-        $position = ftell($this->resource);
+        $position = @ftell($this->resource);
         if (false === $position) {
             throw new Exception\IOException('Unexpected result of operation');
         }
@@ -253,7 +253,7 @@ class Stream implements StreamInterface
             throw new Exception\BadMethodCallException('Operation not supported');
         }
 
-        if (fseek($this->resource, $offset, $whence) < 0) {
+        if (@fseek($this->resource, $offset, $whence) < 0) {
             throw new Exception\IOException('Unexpected result of operation');
         }
 
@@ -273,6 +273,6 @@ class Stream implements StreamInterface
      */
     public function close()
     {
-        return fclose($this->resource);
+        return @fclose($this->resource);
     }
 }

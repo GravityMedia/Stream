@@ -42,7 +42,7 @@ class StreamReader implements StreamReaderInterface
      */
     public function read($length = 1)
     {
-        $data = fread($this->resource, $length);
+        $data = @fread($this->resource, $length);
         if (false === $data) {
             throw new Exception\IOException('Unexpected result of operation');
         }

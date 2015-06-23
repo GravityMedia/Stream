@@ -42,7 +42,7 @@ class StreamWriter implements StreamWriterInterface
      */
     public function write($data)
     {
-        $length = fwrite($this->resource, $data);
+        $length = @fwrite($this->resource, $data);
         if (false === $length) {
             throw new Exception\IOException('Unexpected result of operation');
         }
@@ -55,7 +55,7 @@ class StreamWriter implements StreamWriterInterface
      */
     public function truncate($size)
     {
-        if (!ftruncate($this->resource, $size)) {
+        if (!@ftruncate($this->resource, $size)) {
             throw new Exception\IOException('Unexpected result of operation');
         }
 

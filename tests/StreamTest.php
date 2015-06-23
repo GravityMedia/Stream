@@ -12,13 +12,13 @@ use GravityMedia\Stream\Stream;
 /**
  * Stream test
  *
- * @package GravityMedia\Stream
+ * @package GravityMedia\StreamTest
  * @covers  GravityMedia\Stream\Stream
  */
 class StreamTest extends \PHPUnit_Framework_TestCase
 {
     /**
-     * Test that the constructor throws an exception for invalid URI argument
+     * Test that the constructor throws an exception on invalid URI argument
      *
      * @expectedException        \GravityMedia\Stream\Exception\IOException
      * @expectedExceptionMessage Failed to open stream
@@ -101,14 +101,14 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test that the reader getter throws an exception on non-readable streams
+     * Test that getting the reader throws an exception on non-readable streams
      *
      * @uses                     GravityMedia\Stream\StreamReader::__construct
      *
      * @expectedException        \GravityMedia\Stream\Exception\BadMethodCallException
      * @expectedExceptionMessage Operation not supported
      */
-    public function testReaderGetterThrowsExceptionOnNonReadableStreams()
+    public function testGettingReaderThrowsExceptionOnNonReadableStreams()
     {
         $stream = new Stream('php://output', 'w');
 
@@ -128,14 +128,14 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test that the writer getter throws an exception on non-writable streams
+     * Test that getting the writer throws an exception on non-writable streams
      *
      * @uses                     GravityMedia\Stream\StreamWriter::__construct
      *
      * @expectedException        \GravityMedia\Stream\Exception\BadMethodCallException
      * @expectedExceptionMessage Operation not supported
      */
-    public function testWriterGetterThrowsExceptionOnNonReadableStreams()
+    public function testGettingWriterThrowsExceptionOnNonReadableStreams()
     {
         $stream = new Stream('php://input', 'r');
 
@@ -155,9 +155,37 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * Test that getting the size from a non-local stream throws an exception
+     *
+     * @expectedException        \GravityMedia\Stream\Exception\BadMethodCallException
+     * @expectedExceptionMessage Operation not supported
+     */
+    public function testGettingSizeThrowsExceptionOnNonLocalStream()
+    {
+        stream_wrapper_register('test', '\GravityMedia\StreamTest\Util\TestStreamWrapper', STREAM_IS_URL);
+        $stream = new Stream('test://phpunit');
+
+        $stream->getSize();
+    }
+
+    /**
+     * Test that getting the size from a closed stream throws an exception
+     *
+     * @expectedException        \GravityMedia\Stream\Exception\IOException
+     * @expectedExceptionMessage Unexpected result of operation
+     */
+    public function testGettingSizeThrowsExceptionOnClosedStream()
+    {
+        $stream = new Stream('php://temp');
+        $stream->close();
+
+        $stream->getSize();
+    }
+
+    /**
      * Test that a stream returns the correct size
      */
-    public function testStreamReturnsCorrectSize()
+    public function testGettingSizeReturnsCorrectSize()
     {
         $contents = 'contents';
         $resource = fopen('php://temp', 'w');
@@ -184,6 +212,20 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * Test that locating the position on a closed stream throws an exception
+     *
+     * @expectedException        \GravityMedia\Stream\Exception\IOException
+     * @expectedExceptionMessage Unexpected result of operation
+     */
+    public function testLocatingPositionThrowsExceptionOnClosedStream()
+    {
+        $stream = new Stream('php://temp');
+        $stream->close();
+
+        $stream->tell();
+    }
+
+    /**
      * Test that the position of the stream is returned
      */
     public function testReturnPositionOfStream()
@@ -197,6 +239,32 @@ class StreamTest extends \PHPUnit_Framework_TestCase
         $stream->bind($resource);
 
         $this->assertEquals($position, $stream->tell());
+    }
+
+    /**
+     * Test that seeking on a non-seekable stream throws an exception
+     *
+     * @expectedException        \GravityMedia\Stream\Exception\BadMethodCallException
+     * @expectedExceptionMessage Operation not supported
+     */
+    public function testSeekingThrowsExceptionOnNonSeekableStream()
+    {
+        $stream = new Stream('php://output', 'w');
+
+        $stream->seek(0);
+    }
+
+    /**
+     * Test that seeking on a stream throws an exception when trying to seek after the ent of the stream
+     *
+     * @expectedException        \GravityMedia\Stream\Exception\IOException
+     * @expectedExceptionMessage Unexpected result of operation
+     */
+    public function testSeekingThrowsExceptionOnSeekingOutOfBounds()
+    {
+        $stream = new Stream('php://temp');
+
+        $stream->seek(1000);
     }
 
     /**

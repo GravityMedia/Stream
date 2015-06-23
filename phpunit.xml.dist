@@ -37,6 +37,7 @@
     <testsuites>
         <testsuite name="Stream test suite">
             <directory>tests</directory>
+            <exclude>tests/Utils</exclude>
         </testsuite>
     </testsuites>
     <filter>

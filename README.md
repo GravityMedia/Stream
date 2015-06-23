@@ -41,7 +41,7 @@ $ php composer.phar install
 
 ##Usage##
 
-This is a simple usage example for strings and is applicable for binary data streams.
+This is a simple usage example for character streams but is applicable for binary data streams.
 
 ```php
 require 'vendor/autoload.php';
