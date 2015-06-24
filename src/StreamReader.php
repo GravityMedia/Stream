@@ -42,6 +42,10 @@ class StreamReader implements StreamReaderInterface
      */
     public function read($length = 1)
     {
+        if (!is_resource($this->resource)) {
+            throw new Exception\IOException('Invalid stream resource');
+        }
+
         $data = @fread($this->resource, $length);
         if (false === $data) {
             throw new Exception\IOException('Unexpected result of operation');

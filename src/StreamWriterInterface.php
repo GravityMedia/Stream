@@ -22,7 +22,8 @@ interface StreamWriterInterface
      * @param string $data The data
      *
      * @throws Exception\BadMethodCallException An exception will be thrown for non-writable streams
-     * @throws Exception\IOException            An exception will be thrown when the data could not be written
+     * @throws Exception\IOException            An exception will be thrown for invalid stream resources or when the
+     *                                          data could not be written
      *
      * @return int
      * @link   http://www.php.net/manual/en/function.fwrite.php
@@ -35,7 +36,8 @@ interface StreamWriterInterface
      * @param int $size The size to truncate to
      *
      * @throws Exception\BadMethodCallException An exception will be thrown for non-writable streams
-     * @throws Exception\IOException            An exception will be thrown when the stream could not be truncated
+     * @throws Exception\IOException            An exception will be thrown for invalid stream resources or when the
+     *                                          stream could not be truncated
      *
      * @return $this
      * @link   http://www.php.net/manual/en/function.ftruncate.php

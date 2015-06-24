@@ -18,6 +18,14 @@ use GravityMedia\Stream\Stream;
 class StreamTest extends \PHPUnit_Framework_TestCase
 {
     /**
+     * @inheritdoc
+     */
+    public static function setUpBeforeClass()
+    {
+        stream_wrapper_register('test', '\GravityMedia\StreamTest\Util\TestStreamWrapper', STREAM_IS_URL);
+    }
+
+    /**
      * Test that the constructor throws an exception on invalid URI argument
      *
      * @expectedException        \GravityMedia\Stream\Exception\IOException
@@ -51,7 +59,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      * Test that the an exception is thrown when trying to bind an invalid resources
      *
      * @expectedException        \GravityMedia\Stream\Exception\InvalidArgumentException
-     * @expectedExceptionMessage Invalid resource argument
+     * @expectedExceptionMessage Invalid stream resource
      */
     public function testBindingInvalidResourceThrowsException()
     {
@@ -162,7 +170,6 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      */
     public function testGettingSizeThrowsExceptionOnNonLocalStream()
     {
-        stream_wrapper_register('test', '\GravityMedia\StreamTest\Util\TestStreamWrapper', STREAM_IS_URL);
         $stream = new Stream('test://phpunit');
 
         $stream->getSize();
@@ -172,7 +179,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      * Test that getting the size from a closed stream throws an exception
      *
      * @expectedException        \GravityMedia\Stream\Exception\IOException
-     * @expectedExceptionMessage Unexpected result of operation
+     * @expectedExceptionMessage Invalid stream resource
      */
     public function testGettingSizeThrowsExceptionOnClosedStream()
     {
@@ -183,13 +190,25 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * Test that getting the size from a stream throws an exception when there are no stats available
+     *
+     * @expectedException        \GravityMedia\Stream\Exception\IOException
+     * @expectedExceptionMessage Unexpected result of operation
+     */
+    public function testGettingSizeThrowsExceptionOnStreamWithNoStats()
+    {
+        $stream = new Stream('php://input');
+
+        $stream->getSize();
+    }
+
+    /**
      * Test that a stream returns the correct size
      */
-    public function testGettingSizeReturnsCorrectSize()
+    public function testGettingSize()
     {
-        $contents = 'contents';
         $resource = fopen('php://temp', 'w');
-        fwrite($resource, $contents);
+        fwrite($resource, 'contents');
 
         $stream = new Stream();
         $stream->bind($resource);
@@ -198,9 +217,23 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * Test that checking for the end of stream throws an exception on closed stream
+     *
+     * @expectedException        \GravityMedia\Stream\Exception\IOException
+     * @expectedExceptionMessage Invalid stream resource
+     */
+    public function testEndOfStreamThrowsExceptionOnClosedStream()
+    {
+        $stream = new Stream('php://temp');
+        $stream->close();
+
+        $stream->eof();
+    }
+
+    /**
      * Test that the end of stream was reached
      */
-    public function testReachEndOfStream()
+    public function testEndOfStream()
     {
         $resource = fopen('php://temp', 'r');
         fread($resource, 1);
@@ -215,7 +248,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      * Test that locating the position on a closed stream throws an exception
      *
      * @expectedException        \GravityMedia\Stream\Exception\IOException
-     * @expectedExceptionMessage Unexpected result of operation
+     * @expectedExceptionMessage Invalid stream resource
      */
     public function testLocatingPositionThrowsExceptionOnClosedStream()
     {
@@ -226,9 +259,9 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test that the position of the stream is returned
+     * Test that the position of the stream can be located
      */
-    public function testReturnPositionOfStream()
+    public function testLocatingPosition()
     {
         $position = 4;
         $resource = fopen('php://temp', 'r+');
@@ -247,30 +280,44 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      * @expectedException        \GravityMedia\Stream\Exception\BadMethodCallException
      * @expectedExceptionMessage Operation not supported
      */
-    public function testSeekingThrowsExceptionOnNonSeekableStream()
+    public function testSeekingPositionThrowsExceptionOnNonSeekableStream()
     {
-        $stream = new Stream('php://output', 'w');
+        $stream = new Stream('php://input');
 
         $stream->seek(0);
     }
 
     /**
-     * Test that seeking on a stream throws an exception when trying to seek after the ent of the stream
+     * Test that seeking on a closed stream throws an exception
+     *
+     * @expectedException        \GravityMedia\Stream\Exception\IOException
+     * @expectedExceptionMessage Invalid stream resource
+     */
+    public function testSeekingPositionThrowsExceptionOnClosedStream()
+    {
+        $stream = new Stream('php://temp');
+        $stream->close();
+
+        $stream->seek(0);
+    }
+
+    /**
+     * Test that seeking on a stream throws an exception when trying to seek with an invalid offset
      *
      * @expectedException        \GravityMedia\Stream\Exception\IOException
      * @expectedExceptionMessage Unexpected result of operation
      */
-    public function testSeekingThrowsExceptionOnSeekingOutOfBounds()
+    public function testSeekingPositionThrowsExceptionOnInvalidOffset()
     {
         $stream = new Stream('php://temp');
 
-        $stream->seek(1000);
+        $stream->seek(-1);
     }
 
     /**
      * Test that seeking the stream returns correct position
      */
-    public function testSeekStream()
+    public function testSeekingPosition()
     {
         $resource = fopen('php://temp', 'r+');
         fwrite($resource, 'contents');
@@ -284,7 +331,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     /**
      * Test that rewinding the stream returns correct position
      */
-    public function testRewindStream()
+    public function testRewindPosition()
     {
         $resource = fopen('php://temp', 'r+');
         fwrite($resource, 'contents');
@@ -293,5 +340,18 @@ class StreamTest extends \PHPUnit_Framework_TestCase
         $stream->bind($resource);
 
         $this->assertEquals(0, $stream->rewind());
+    }
+
+    /**
+     * Test that closing the stream closes the trem resource
+     */
+    public function testCloseStreamResource()
+    {
+        $resource = fopen('php://input', 'r');
+        $stream = new Stream();
+        $stream->bind($resource);
+        $stream->close();
+
+        $this->assertFalse(is_resource($resource));
     }
 }

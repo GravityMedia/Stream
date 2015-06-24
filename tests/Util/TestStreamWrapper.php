@@ -21,6 +21,6 @@ class TestStreamWrapper
 
     function stream_eof()
     {
-        return true;
+        return false;
     }
 }

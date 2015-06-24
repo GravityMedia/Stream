@@ -20,7 +20,7 @@ class StreamWriterTest extends \PHPUnit_Framework_TestCase
     /**
      * Test that the constructor throws an exception on non-writable stream argument
      *
-     * @uses GravityMedia\Stream\Stream::__destruct
+     * @uses                     GravityMedia\Stream\Stream::__destruct
      *
      * @expectedException        \GravityMedia\Stream\Exception\InvalidArgumentException
      * @expectedExceptionMessage Stream is not writable
@@ -40,16 +40,16 @@ class StreamWriterTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test that writing contents to a closed stream throws an exception
+     * Test that writing data to a closed stream throws an exception
      *
-     * @uses GravityMedia\Stream\Stream::__destruct
+     * @uses                     GravityMedia\Stream\Stream::__destruct
      *
      * @expectedException        \GravityMedia\Stream\Exception\IOException
-     * @expectedExceptionMessage Unexpected result of operation
+     * @expectedExceptionMessage Invalid stream resource
      */
-    public function testWritingContentsThrowsExceptionOnClosedStream()
+    public function testWritingDataThrowsExceptionOnClosedStream()
     {
-        $resource = fopen('php://temp', 'r+b');
+        $resource = fopen('php://temp', 'w');
         fclose($resource);
 
         $streamMock = $this->getMockBuilder('GravityMedia\Stream\Stream')
@@ -66,19 +66,46 @@ class StreamWriterTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue($resource));
 
         $writer = new StreamWriter($streamMock);
-
         $writer->write('contents');
     }
 
     /**
-     * Test that the contents can be written and the length is returned
+     * Test that writing invalid data to a stream throws an exception
+     *
+     * @uses                     GravityMedia\Stream\Stream::__destruct
+     *
+     * @expectedException        \GravityMedia\Stream\Exception\IOException
+     * @expectedExceptionMessage Unexpected result of operation
+     */
+    public function testWritingDataThrowsExceptionOnInvalidData()
+    {
+        $resource = fopen('php://temp', 'w');
+
+        $streamMock = $this->getMockBuilder('GravityMedia\Stream\Stream')
+            ->disableOriginalConstructor()
+            ->setMethods(array('isWritable', 'getResource'))
+            ->getMock();
+
+        $streamMock->expects($this->once())
+            ->method('isWritable')
+            ->will($this->returnValue(true));
+
+        $streamMock->expects($this->once())
+            ->method('getResource')
+            ->will($this->returnValue($resource));
+
+        $writer = new StreamWriter($streamMock);
+        $writer->write(new \stdClass());
+    }
+
+    /**
+     * Test that the data can be written and the length is returned
      *
      * @uses GravityMedia\Stream\Stream::__destruct
      */
-    public function testWritingContentsReturnsContentLength()
+    public function testWritingData()
     {
-        $contents = 'contents';
-        $resource = fopen('php://temp', 'w+');
+        $resource = fopen('php://temp', 'w');
 
         $streamMock = $this->getMockBuilder('GravityMedia\Stream\Stream')
             ->disableOriginalConstructor()
@@ -95,7 +122,7 @@ class StreamWriterTest extends \PHPUnit_Framework_TestCase
 
         $writer = new StreamWriter($streamMock);
 
-        $this->assertEquals(8, $writer->write($contents));
+        $this->assertEquals(8, $writer->write('contents'));
 
         fclose($resource);
     }
@@ -103,14 +130,14 @@ class StreamWriterTest extends \PHPUnit_Framework_TestCase
     /**
      * Test that truncating a closed stream throws an exception
      *
-     * @uses GravityMedia\Stream\Stream::__destruct
+     * @uses                     GravityMedia\Stream\Stream::__destruct
      *
      * @expectedException        \GravityMedia\Stream\Exception\IOException
-     * @expectedExceptionMessage Unexpected result of operation
+     * @expectedExceptionMessage Invalid stream resource
      */
     public function testTruncatingThrowsExceptionOnClosedStream()
     {
-        $resource = fopen('php://temp', 'r+b');
+        $resource = fopen('php://temp', 'w');
         fclose($resource);
 
         $streamMock = $this->getMockBuilder('GravityMedia\Stream\Stream')
@@ -127,8 +154,36 @@ class StreamWriterTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue($resource));
 
         $writer = new StreamWriter($streamMock);
-
         $writer->truncate(8);
+    }
+
+    /**
+     * Test that truncating a closed stream throws an exception
+     *
+     * @uses                     GravityMedia\Stream\Stream::__destruct
+     *
+     * @expectedException        \GravityMedia\Stream\Exception\IOException
+     * @expectedExceptionMessage Unexpected result of operation
+     */
+    public function testTruncatingThrowsExceptionOnInvalidSize()
+    {
+        $resource = fopen('php://temp', 'w');
+
+        $streamMock = $this->getMockBuilder('GravityMedia\Stream\Stream')
+            ->disableOriginalConstructor()
+            ->setMethods(array('isWritable', 'getResource'))
+            ->getMock();
+
+        $streamMock->expects($this->once())
+            ->method('isWritable')
+            ->will($this->returnValue(true));
+
+        $streamMock->expects($this->once())
+            ->method('getResource')
+            ->will($this->returnValue($resource));
+
+        $writer = new StreamWriter($streamMock);
+        $writer->truncate(new \stdClass());
     }
 
     /**
@@ -136,7 +191,7 @@ class StreamWriterTest extends \PHPUnit_Framework_TestCase
      *
      * @uses GravityMedia\Stream\Stream::__destruct
      */
-    public function testTruncateStream()
+    public function testTruncating()
     {
         $resource = fopen('php://temp', 'w+');
 

@@ -91,7 +91,8 @@ interface StreamInterface
      * Get size in bytes
      *
      * @throws Exception\BadMethodCallException An exception will be thrown for non-local streams
-     * @throws Exception\IOException            An exception will be thrown when the size could not be determined
+     * @throws Exception\IOException            An exception will be thrown for invalid stream resources or when the
+     *                                          size could not be determined
      *
      * @return int
      */
@@ -99,6 +100,8 @@ interface StreamInterface
 
     /**
      * Return if the end of the stream was reached
+     *
+     * @throws Exception\IOException An exception will be thrown for invalid stream resources
      *
      * @return bool
      * @link   http://www.php.net/manual/en/function.feof.php
@@ -108,7 +111,7 @@ interface StreamInterface
     /**
      * Return the current position of the stream
      *
-     * @throws Exception\IOException An exception will be thrown when the position could not be determined
+     * @throws Exception\IOException An exception will be thrown for invalid stream resources
      *
      * @return int
      * @link   http://www.php.net/manual/en/function.ftell.php
@@ -122,7 +125,8 @@ interface StreamInterface
      * @param int $whence Either SEEK_SET (which is default), SEEK_CUR or SEEK_END
      *
      * @throws Exception\BadMethodCallException An exception will be thrown for non-seekable streams
-     * @throws Exception\IOException            An exception will be thrown when the position could not be set
+     * @throws Exception\IOException            An exception will be thrown for invalid stream resources or when the
+     *                                          position could not be set
      *
      * @return int
      * @link   http://www.php.net/manual/en/function.fseek.php
@@ -133,7 +137,8 @@ interface StreamInterface
      * Rewind the position of the stream
      *
      * @throws Exception\BadMethodCallException An exception will be thrown for non-seekable streams
-     * @throws Exception\IOException            An exception will be thrown when the position could not be set
+     * @throws Exception\IOException            An exception will be thrown for invalid stream resources or when the
+     *                                          position could not be set
      *
      * @return int
      */

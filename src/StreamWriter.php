@@ -42,6 +42,10 @@ class StreamWriter implements StreamWriterInterface
      */
     public function write($data)
     {
+        if (!is_resource($this->resource)) {
+            throw new Exception\IOException('Invalid stream resource');
+        }
+
         $length = @fwrite($this->resource, $data);
         if (false === $length) {
             throw new Exception\IOException('Unexpected result of operation');
@@ -55,6 +59,10 @@ class StreamWriter implements StreamWriterInterface
      */
     public function truncate($size)
     {
+        if (!is_resource($this->resource)) {
+            throw new Exception\IOException('Invalid stream resource');
+        }
+
         if (!@ftruncate($this->resource, $size)) {
             throw new Exception\IOException('Unexpected result of operation');
         }

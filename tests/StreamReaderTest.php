@@ -40,16 +40,16 @@ class StreamReaderTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test that reading contents from a closed stream throws an exception
+     * Test that reading data from a closed stream throws an exception
      *
      * @uses GravityMedia\Stream\Stream::__destruct
      *
      * @expectedException        \GravityMedia\Stream\Exception\IOException
-     * @expectedExceptionMessage Unexpected result of operation
+     * @expectedExceptionMessage Invalid stream resource
      */
-    public function testReadingContentsThrowsExceptionOnClosedStream()
+    public function testReadingDataThrowsExceptionOnClosedStream()
     {
-        $resource = fopen('php://temp', 'r+');
+        $resource = fopen('php://temp', 'r');
         fclose($resource);
 
         $streamMock = $this->getMockBuilder('GravityMedia\Stream\Stream')
@@ -71,15 +71,45 @@ class StreamReaderTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test that the contents returned are equal to those which were previously written
+     * Test that reading data from an empty stream throws an exception
+     *
+     * @uses GravityMedia\Stream\Stream::__destruct
+     *
+     * @expectedException        \GravityMedia\Stream\Exception\IOException
+     * @expectedExceptionMessage Unexpected result of operation
+     */
+    public function testReadingDataThrowsExceptionOnInvalidLength()
+    {
+        $resource = fopen('php://input', 'r');
+
+        $streamMock = $this->getMockBuilder('GravityMedia\Stream\Stream')
+            ->disableOriginalConstructor()
+            ->setMethods(array('isReadable', 'getResource'))
+            ->getMock();
+
+        $streamMock->expects($this->once())
+            ->method('isReadable')
+            ->will($this->returnValue(true));
+
+        $streamMock->expects($this->once())
+            ->method('getResource')
+            ->will($this->returnValue($resource));
+
+        $reader = new StreamReader($streamMock);
+
+        $reader->read(0);
+    }
+
+    /**
+     * Test that the data can be read
      *
      * @uses GravityMedia\Stream\Stream::__destruct
      */
-    public function testReadContents()
+    public function testReadingData()
     {
-        $contents = 'contents';
+        $data = 'contents';
         $resource = fopen('php://temp', 'r+');
-        fwrite($resource, $contents);
+        fwrite($resource, $data);
         fseek($resource, 0);
 
         $streamMock = $this->getMockBuilder('GravityMedia\Stream\Stream')
@@ -97,6 +127,6 @@ class StreamReaderTest extends \PHPUnit_Framework_TestCase
 
         $reader = new StreamReader($streamMock);
 
-        $this->assertEquals($contents, $reader->read(8));
+        $this->assertEquals($data, $reader->read(8));
     }
 }

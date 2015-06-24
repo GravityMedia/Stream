@@ -22,7 +22,8 @@ interface StreamReaderInterface
      * @param int $length The maximum number of bytes to read (default is 1)
      *
      * @throws Exception\BadMethodCallException An exception will be thrown for non-readable streams
-     * @throws Exception\IOException            An exception will be thrown when the data could not be read
+     * @throws Exception\IOException            An exception will be thrown for invalid stream resources or when the
+     *                                          data could not be read
      *
      * @return string
      * @link   http://www.php.net/manual/en/function.fread.php
