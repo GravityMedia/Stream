@@ -7,13 +7,13 @@
 [![Quality Score](https://img.shields.io/scrutinizer/g/GravityMedia/Stream.svg)](https://scrutinizer-ci.com/g/GravityMedia/Stream)
 [![Total Downloads](https://img.shields.io/packagist/dt/gravitymedia/stream.svg)](https://packagist.org/packages/gravitymedia/stream)
 
-Object oriented stream library for PHP
+Stream is an object oriented stream library for PHP.
 
 ## Requirements
 
 This library has the following requirements:
 
- - PHP 5.4+
+- PHP 5.4+
 
 ## Installation
 
@@ -80,6 +80,15 @@ print PHP_EOL;
 ``` bash
 $ php composer.phar test
 ```
+
+## Contributing
+
+Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
+
+## Credits
+
+- [Daniel Schröder](https://github.com/pCoLaSD)
+- [All Contributors](../../contributors)
 
 ## License
 
