@@ -13,7 +13,7 @@ Stream is an object oriented stream library for PHP.
 
 This library has the following requirements:
 
-- PHP 5.4+
+- PHP 5.4+ or HHVM
 
 ## Installation
 
