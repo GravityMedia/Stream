@@ -6,6 +6,7 @@
 [![Coverage Status](https://img.shields.io/scrutinizer/coverage/g/GravityMedia/Stream.svg)](https://scrutinizer-ci.com/g/GravityMedia/Stream/code-structure)
 [![Quality Score](https://img.shields.io/scrutinizer/g/GravityMedia/Stream.svg)](https://scrutinizer-ci.com/g/GravityMedia/Stream)
 [![Total Downloads](https://img.shields.io/packagist/dt/gravitymedia/stream.svg)](https://packagist.org/packages/gravitymedia/stream)
+[![Dependency Status](https://img.shields.io/versioneye/d/php/gravitymedia:stream.svg)](https://www.versioneye.com/user/projects/54f76e264f31083e1b0017e2)
 
 Stream is an object oriented stream library for PHP.
 
