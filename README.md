@@ -1,49 +1,39 @@
-#Stream
+# Stream
+
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/gravitymedia/stream.svg)](https://packagist.org/packages/gravitymedia/stream)
+[![Software License](https://img.shields.io/packagist/l/gravitymedia/stream.svg)](LICENSE.md)
+[![Build Status](https://img.shields.io/travis/GravityMedia/Stream.svg)](https://travis-ci.org/GravityMedia/Stream)
+[![Coverage Status](https://img.shields.io/scrutinizer/coverage/g/GravityMedia/Stream.svg)](https://scrutinizer-ci.com/g/GravityMedia/Stream/code-structure)
+[![Quality Score](https://img.shields.io/scrutinizer/g/GravityMedia/Stream.svg)](https://scrutinizer-ci.com/g/GravityMedia/Stream)
+[![Total Downloads](https://img.shields.io/packagist/dt/gravitymedia/stream.svg)](https://packagist.org/packages/gravitymedia/stream)
 
 Object oriented stream library for PHP
 
-[![Packagist](https://img.shields.io/packagist/v/gravitymedia/stream.svg)](https://packagist.org/packages/gravitymedia/stream)
-[![Downloads](https://img.shields.io/packagist/dt/gravitymedia/stream.svg)](https://packagist.org/packages/gravitymedia/stream)
-[![License](https://img.shields.io/packagist/l/gravitymedia/stream.svg)](https://packagist.org/packages/gravitymedia/stream)
-[![Build](https://img.shields.io/travis/GravityMedia/Stream.svg)](https://travis-ci.org/GravityMedia/Stream)
-[![Code Quality](https://img.shields.io/scrutinizer/g/GravityMedia/Stream.svg)](https://scrutinizer-ci.com/g/GravityMedia/Stream/?branch=master)
-[![Coverage](https://img.shields.io/scrutinizer/coverage/g/GravityMedia/Stream.svg)](https://scrutinizer-ci.com/g/GravityMedia/Stream/?branch=master)
-
-##Requirements##
+## Requirements
 
 This library has the following requirements:
 
  - PHP 5.4+
 
-##Installation##
+## Installation
 
 Install composer in your project:
 
-```bash
+``` bash
 $ curl -s https://getcomposer.org/installer | php
 ```
 
-Create a `composer.json` file in your project root:
+Require the package via Composer:
 
-```json
-{
-    "require": {
-        "gravitymedia/stream": "dev-master"
-    }
-}
+``` bash
+$ php composer.phar require gravitymedia/stream
 ```
 
-Install via composer:
-
-```bash
-$ php composer.phar install
-```
-
-##Usage##
+## Usage
 
 This is a simple usage example for character streams but is applicable for binary data streams.
 
-```php
+``` php
 require 'vendor/autoload.php';
 
 use GravityMedia\Stream\Stream;
@@ -84,3 +74,13 @@ while (!$stream->eof()) {
 }
 print PHP_EOL;
 ```
+
+## Testing
+
+``` bash
+$ php composer.phar test
+```
+
+## License
+
+The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
