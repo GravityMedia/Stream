@@ -18,14 +18,6 @@ use GravityMedia\Stream\Stream;
 class StreamTest extends \PHPUnit_Framework_TestCase
 {
     /**
-     * @inheritdoc
-     */
-    public static function setUpBeforeClass()
-    {
-        stream_wrapper_register('test', '\GravityMedia\StreamTest\Util\TestStreamWrapper', STREAM_IS_URL);
-    }
-
-    /**
      * Test that the constructor throws an exception on invalid URI argument
      *
      * @expectedException        \GravityMedia\Stream\Exception\IOException
@@ -83,7 +75,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     /**
      * Test that the stream returns the resource which was bound before
      */
-    public function testStreamReturnsResource()
+    public function testGettingResourceFromStream()
     {
         $resource = fopen('php://input', 'r');
         $stream = new Stream();
@@ -95,7 +87,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     /**
      * Test that the resource setter initializes the meta data
      */
-    public function testResourceSetterInitializesMetaData()
+    public function testConstructorInitializesMetaData()
     {
         $uri = 'php://temp';
         $stream = new Stream($uri);
@@ -118,9 +110,17 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      */
     public function testGettingReaderThrowsExceptionOnNonReadableStreams()
     {
-        $stream = new Stream('php://output', 'w');
+        $streamMock = $this->getMockBuilder('GravityMedia\Stream\Stream')
+            ->disableOriginalConstructor()
+            ->setMethods(array('isReadable'))
+            ->getMock();
 
-        $stream->getReader();
+        $streamMock->expects($this->once())
+            ->method('isReadable')
+            ->will($this->returnValue(false));
+
+        /** @var \GravityMedia\Stream\Stream $streamMock */
+        $streamMock->getReader();
     }
 
     /**
@@ -143,11 +143,19 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      * @expectedException        \GravityMedia\Stream\Exception\BadMethodCallException
      * @expectedExceptionMessage Operation not supported
      */
-    public function testGettingWriterThrowsExceptionOnNonReadableStreams()
+    public function testGettingWriterThrowsExceptionOnNonWritableStreams()
     {
-        $stream = new Stream('php://input', 'r');
+        $streamMock = $this->getMockBuilder('GravityMedia\Stream\Stream')
+            ->disableOriginalConstructor()
+            ->setMethods(array('isWritable'))
+            ->getMock();
 
-        $stream->getWriter();
+        $streamMock->expects($this->once())
+            ->method('isWritable')
+            ->will($this->returnValue(false));
+
+        /** @var \GravityMedia\Stream\Stream $streamMock */
+        $streamMock->getWriter();
     }
 
     /**
@@ -170,9 +178,17 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      */
     public function testGettingSizeThrowsExceptionOnNonLocalStream()
     {
-        $stream = new Stream('test://phpunit');
+        $streamMock = $this->getMockBuilder('GravityMedia\Stream\Stream')
+            ->disableOriginalConstructor()
+            ->setMethods(array('isLocal'))
+            ->getMock();
 
-        $stream->getSize();
+        $streamMock->expects($this->once())
+            ->method('isLocal')
+            ->will($this->returnValue(false));
+
+        /** @var \GravityMedia\Stream\Stream $streamMock */
+        $streamMock->getSize();
     }
 
     /**
@@ -183,7 +199,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      */
     public function testGettingSizeThrowsExceptionOnClosedStream()
     {
-        $stream = new Stream('php://temp');
+        $stream = new Stream('php://input');
         $stream->close();
 
         $stream->getSize();
@@ -282,9 +298,17 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      */
     public function testSeekingPositionThrowsExceptionOnNonSeekableStream()
     {
-        $stream = new Stream('php://input');
+        $streamMock = $this->getMockBuilder('GravityMedia\Stream\Stream')
+            ->disableOriginalConstructor()
+            ->setMethods(array('isSeekable'))
+            ->getMock();
 
-        $stream->seek(0);
+        $streamMock->expects($this->once())
+            ->method('isSeekable')
+            ->will($this->returnValue(false));
+
+        /** @var \GravityMedia\Stream\Stream $streamMock */
+        $streamMock->seek(0);
     }
 
     /**
