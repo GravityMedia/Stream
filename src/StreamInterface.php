@@ -35,21 +35,28 @@ interface StreamInterface
     public function getResource();
 
     /**
-     * Return whether read access will be granted
+     * Return whether the stream resource is accessible
+     *
+     * @return mixed
+     */
+    public function isAccessible();
+
+    /**
+     * Return whether read access on the stream will be granted
      *
      * @return bool
      */
     public function isReadable();
 
     /**
-     * Return whether write access will be granted
+     * Return whether write access on the stream will be granted
      *
      * @return bool
      */
     public function isWritable();
 
     /**
-     * Return whether the current stream can be seeked
+     * Return whether the stream can be seeked
      *
      * @return bool
      */
@@ -63,14 +70,14 @@ interface StreamInterface
     public function getUri();
 
     /**
-     * Return true for local streams
+     * Return whether the stream is local
      *
      * @return bool
      */
     public function isLocal();
 
     /**
-     * Get reader
+     * Get stream reader
      *
      * @throws Exception\BadMethodCallException An exception will be thrown for non-readable streams
      *
@@ -79,7 +86,7 @@ interface StreamInterface
     public function getReader();
 
     /**
-     * Get writer
+     * Get stream writer
      *
      * @throws Exception\BadMethodCallException An exception will be thrown for non-writable streams
      *
@@ -88,7 +95,7 @@ interface StreamInterface
     public function getWriter();
 
     /**
-     * Get size in bytes
+     * Get size of the stream in bytes
      *
      * @throws Exception\BadMethodCallException An exception will be thrown for non-local streams
      * @throws Exception\IOException            An exception will be thrown for invalid stream resources or when the
@@ -99,7 +106,7 @@ interface StreamInterface
     public function getSize();
 
     /**
-     * Return if the end of the stream was reached
+     * Return whether the end of the stream was reached
      *
      * @throws Exception\IOException An exception will be thrown for invalid stream resources
      *

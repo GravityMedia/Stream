@@ -20,7 +20,7 @@ class StreamReaderTest extends \PHPUnit_Framework_TestCase
     /**
      * Test that the constructor throws an exception on non-readable stream argument
      *
-     * @uses GravityMedia\Stream\Stream::__destruct
+     * @uses GravityMedia\Stream\Stream
      *
      * @expectedException        \GravityMedia\Stream\Exception\InvalidArgumentException
      * @expectedExceptionMessage Stream is not readable
@@ -42,7 +42,7 @@ class StreamReaderTest extends \PHPUnit_Framework_TestCase
     /**
      * Test that reading data from a closed stream throws an exception
      *
-     * @uses GravityMedia\Stream\Stream::__destruct
+     * @uses GravityMedia\Stream\Stream
      *
      * @expectedException        \GravityMedia\Stream\Exception\IOException
      * @expectedExceptionMessage Invalid stream resource
@@ -54,7 +54,7 @@ class StreamReaderTest extends \PHPUnit_Framework_TestCase
 
         $streamMock = $this->getMockBuilder('GravityMedia\Stream\Stream')
             ->disableOriginalConstructor()
-            ->setMethods(array('isReadable', 'getResource'))
+            ->setMethods(array('isReadable', 'isAccessible', 'getResource'))
             ->getMock();
 
         $streamMock->expects($this->once())
@@ -62,8 +62,8 @@ class StreamReaderTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue(true));
 
         $streamMock->expects($this->once())
-            ->method('getResource')
-            ->will($this->returnValue($resource));
+            ->method('isAccessible')
+            ->will($this->returnValue(false));
 
         $reader = new StreamReader($streamMock);
 
@@ -73,7 +73,7 @@ class StreamReaderTest extends \PHPUnit_Framework_TestCase
     /**
      * Test that reading data from an empty stream throws an exception
      *
-     * @uses GravityMedia\Stream\Stream::__destruct
+     * @uses GravityMedia\Stream\Stream
      *
      * @expectedException        \GravityMedia\Stream\Exception\IOException
      * @expectedExceptionMessage Unexpected result of operation
@@ -84,11 +84,15 @@ class StreamReaderTest extends \PHPUnit_Framework_TestCase
 
         $streamMock = $this->getMockBuilder('GravityMedia\Stream\Stream')
             ->disableOriginalConstructor()
-            ->setMethods(array('isReadable', 'getResource'))
+            ->setMethods(array('isReadable', 'isAccessible', 'getResource'))
             ->getMock();
 
         $streamMock->expects($this->once())
             ->method('isReadable')
+            ->will($this->returnValue(true));
+
+        $streamMock->expects($this->once())
+            ->method('isAccessible')
             ->will($this->returnValue(true));
 
         $streamMock->expects($this->once())
@@ -103,7 +107,7 @@ class StreamReaderTest extends \PHPUnit_Framework_TestCase
     /**
      * Test that the data can be read
      *
-     * @uses GravityMedia\Stream\Stream::__destruct
+     * @uses GravityMedia\Stream\Stream
      */
     public function testReadingData()
     {
@@ -114,11 +118,15 @@ class StreamReaderTest extends \PHPUnit_Framework_TestCase
 
         $streamMock = $this->getMockBuilder('GravityMedia\Stream\Stream')
             ->disableOriginalConstructor()
-            ->setMethods(array('isReadable', 'getResource'))
+            ->setMethods(array('isReadable', 'isAccessible', 'getResource'))
             ->getMock();
 
         $streamMock->expects($this->once())
             ->method('isReadable')
+            ->will($this->returnValue(true));
+
+        $streamMock->expects($this->once())
+            ->method('isAccessible')
             ->will($this->returnValue(true));
 
         $streamMock->expects($this->once())

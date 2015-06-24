@@ -17,9 +17,9 @@ use GravityMedia\Stream\Exception;
 class StreamReader implements StreamReaderInterface
 {
     /**
-     * @var resource
+     * @var StreamInterface
      */
-    protected $resource;
+    protected $stream;
 
     /**
      * Create stream reader object
@@ -34,7 +34,7 @@ class StreamReader implements StreamReaderInterface
             throw new Exception\InvalidArgumentException('Stream is not readable');
         }
 
-        $this->resource = $stream->getResource();
+        $this->stream = $stream;
     }
 
     /**
@@ -42,11 +42,11 @@ class StreamReader implements StreamReaderInterface
      */
     public function read($length = 1)
     {
-        if (!is_resource($this->resource)) {
+        if (!$this->stream->isAccessible()) {
             throw new Exception\IOException('Invalid stream resource');
         }
 
-        $data = @fread($this->resource, $length);
+        $data = @fread($this->stream->getResource(), $length);
         if (false === $data) {
             throw new Exception\IOException('Unexpected result of operation');
         }

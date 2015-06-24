@@ -17,9 +17,9 @@ use GravityMedia\Stream\Exception;
 class StreamWriter implements StreamWriterInterface
 {
     /**
-     * @var resource
+     * @var StreamInterface
      */
-    protected $resource;
+    protected $stream;
 
     /**
      * Create stream writer object
@@ -34,7 +34,7 @@ class StreamWriter implements StreamWriterInterface
             throw new Exception\InvalidArgumentException('Stream is not writable');
         }
 
-        $this->resource = $stream->getResource();
+        $this->stream = $stream;
     }
 
     /**
@@ -42,11 +42,11 @@ class StreamWriter implements StreamWriterInterface
      */
     public function write($data)
     {
-        if (!is_resource($this->resource)) {
+        if (!$this->stream->isAccessible()) {
             throw new Exception\IOException('Invalid stream resource');
         }
 
-        $length = @fwrite($this->resource, $data);
+        $length = @fwrite($this->stream->getResource(), $data);
         if (false === $length) {
             throw new Exception\IOException('Unexpected result of operation');
         }
@@ -59,11 +59,11 @@ class StreamWriter implements StreamWriterInterface
      */
     public function truncate($size)
     {
-        if (!is_resource($this->resource)) {
+        if (!$this->stream->isAccessible()) {
             throw new Exception\IOException('Invalid stream resource');
         }
 
-        if (!@ftruncate($this->resource, $size)) {
+        if (!@ftruncate($this->stream->getResource(), $size)) {
             throw new Exception\IOException('Unexpected result of operation');
         }
 

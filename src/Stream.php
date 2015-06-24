@@ -95,7 +95,7 @@ class Stream implements StreamInterface
      */
     public function __destruct()
     {
-        if (!is_resource($this->resource)) {
+        if (!$this->isAccessible()) {
             return;
         }
 
@@ -130,6 +130,14 @@ class Stream implements StreamInterface
     public function getResource()
     {
         return $this->resource;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isAccessible()
+    {
+        return is_resource($this->resource);
     }
 
     /**
@@ -213,8 +221,7 @@ class Stream implements StreamInterface
             throw new Exception\BadMethodCallException('Operation not supported');
         }
 
-        $resource = $this->getResource();
-        if (!is_resource($resource)) {
+        if (!$this->isAccessible()) {
             throw new Exception\IOException('Invalid stream resource');
         }
 
@@ -223,7 +230,7 @@ class Stream implements StreamInterface
             clearstatcache(true, $uri);
         }
 
-        $stats = @fstat($resource);
+        $stats = @fstat($this->getResource());
         if (!is_array($stats) || !isset($stats['size'])) {
             throw new Exception\IOException('Unexpected result of operation');
         }
@@ -236,12 +243,11 @@ class Stream implements StreamInterface
      */
     public function eof()
     {
-        $resource = $this->getResource();
-        if (!is_resource($resource)) {
+        if (!$this->isAccessible()) {
             throw new Exception\IOException('Invalid stream resource');
         }
 
-        return feof($resource);
+        return feof($this->getResource());
     }
 
     /**
@@ -249,12 +255,11 @@ class Stream implements StreamInterface
      */
     public function tell()
     {
-        $resource = $this->getResource();
-        if (!is_resource($resource)) {
+        if (!$this->isAccessible()) {
             throw new Exception\IOException('Invalid stream resource');
         }
 
-        return ftell($resource);
+        return ftell($this->getResource());
     }
 
     /**
@@ -266,12 +271,11 @@ class Stream implements StreamInterface
             throw new Exception\BadMethodCallException('Operation not supported');
         }
 
-        $resource = $this->getResource();
-        if (!is_resource($resource)) {
+        if (!$this->isAccessible()) {
             throw new Exception\IOException('Invalid stream resource');
         }
 
-        if (fseek($resource, $offset, $whence) < 0) {
+        if (fseek($this->getResource(), $offset, $whence) < 0) {
             throw new Exception\IOException('Unexpected result of operation');
         }
 

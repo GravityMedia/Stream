@@ -20,7 +20,7 @@ class StreamWriterTest extends \PHPUnit_Framework_TestCase
     /**
      * Test that the constructor throws an exception on non-writable stream argument
      *
-     * @uses                     GravityMedia\Stream\Stream::__destruct
+     * @uses                     GravityMedia\Stream\Stream
      *
      * @expectedException        \GravityMedia\Stream\Exception\InvalidArgumentException
      * @expectedExceptionMessage Stream is not writable
@@ -42,7 +42,7 @@ class StreamWriterTest extends \PHPUnit_Framework_TestCase
     /**
      * Test that writing data to a closed stream throws an exception
      *
-     * @uses                     GravityMedia\Stream\Stream::__destruct
+     * @uses                     GravityMedia\Stream\Stream
      *
      * @expectedException        \GravityMedia\Stream\Exception\IOException
      * @expectedExceptionMessage Invalid stream resource
@@ -54,7 +54,7 @@ class StreamWriterTest extends \PHPUnit_Framework_TestCase
 
         $streamMock = $this->getMockBuilder('GravityMedia\Stream\Stream')
             ->disableOriginalConstructor()
-            ->setMethods(array('isWritable', 'getResource'))
+            ->setMethods(array('isWritable', 'isAccessible', 'getResource'))
             ->getMock();
 
         $streamMock->expects($this->once())
@@ -62,8 +62,8 @@ class StreamWriterTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue(true));
 
         $streamMock->expects($this->once())
-            ->method('getResource')
-            ->will($this->returnValue($resource));
+            ->method('isAccessible')
+            ->will($this->returnValue(false));
 
         $writer = new StreamWriter($streamMock);
         $writer->write('contents');
@@ -72,7 +72,7 @@ class StreamWriterTest extends \PHPUnit_Framework_TestCase
     /**
      * Test that writing invalid data to a stream throws an exception
      *
-     * @uses                     GravityMedia\Stream\Stream::__destruct
+     * @uses                     GravityMedia\Stream\Stream
      *
      * @expectedException        \GravityMedia\Stream\Exception\IOException
      * @expectedExceptionMessage Unexpected result of operation
@@ -83,11 +83,15 @@ class StreamWriterTest extends \PHPUnit_Framework_TestCase
 
         $streamMock = $this->getMockBuilder('GravityMedia\Stream\Stream')
             ->disableOriginalConstructor()
-            ->setMethods(array('isWritable', 'getResource'))
+            ->setMethods(array('isWritable', 'isAccessible', 'getResource'))
             ->getMock();
 
         $streamMock->expects($this->once())
             ->method('isWritable')
+            ->will($this->returnValue(true));
+
+        $streamMock->expects($this->once())
+            ->method('isAccessible')
             ->will($this->returnValue(true));
 
         $streamMock->expects($this->once())
@@ -101,7 +105,7 @@ class StreamWriterTest extends \PHPUnit_Framework_TestCase
     /**
      * Test that the data can be written and the length is returned
      *
-     * @uses GravityMedia\Stream\Stream::__destruct
+     * @uses GravityMedia\Stream\Stream
      */
     public function testWritingData()
     {
@@ -109,11 +113,15 @@ class StreamWriterTest extends \PHPUnit_Framework_TestCase
 
         $streamMock = $this->getMockBuilder('GravityMedia\Stream\Stream')
             ->disableOriginalConstructor()
-            ->setMethods(array('isWritable', 'getResource'))
+            ->setMethods(array('isWritable', 'isAccessible', 'getResource'))
             ->getMock();
 
         $streamMock->expects($this->once())
             ->method('isWritable')
+            ->will($this->returnValue(true));
+
+        $streamMock->expects($this->once())
+            ->method('isAccessible')
             ->will($this->returnValue(true));
 
         $streamMock->expects($this->once())
@@ -130,7 +138,7 @@ class StreamWriterTest extends \PHPUnit_Framework_TestCase
     /**
      * Test that truncating a closed stream throws an exception
      *
-     * @uses                     GravityMedia\Stream\Stream::__destruct
+     * @uses                     GravityMedia\Stream\Stream
      *
      * @expectedException        \GravityMedia\Stream\Exception\IOException
      * @expectedExceptionMessage Invalid stream resource
@@ -142,7 +150,7 @@ class StreamWriterTest extends \PHPUnit_Framework_TestCase
 
         $streamMock = $this->getMockBuilder('GravityMedia\Stream\Stream')
             ->disableOriginalConstructor()
-            ->setMethods(array('isWritable', 'getResource'))
+            ->setMethods(array('isWritable', 'isAccessible', 'getResource'))
             ->getMock();
 
         $streamMock->expects($this->once())
@@ -150,8 +158,8 @@ class StreamWriterTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue(true));
 
         $streamMock->expects($this->once())
-            ->method('getResource')
-            ->will($this->returnValue($resource));
+            ->method('isAccessible')
+            ->will($this->returnValue(false));
 
         $writer = new StreamWriter($streamMock);
         $writer->truncate(8);
@@ -160,7 +168,7 @@ class StreamWriterTest extends \PHPUnit_Framework_TestCase
     /**
      * Test that truncating a closed stream throws an exception
      *
-     * @uses                     GravityMedia\Stream\Stream::__destruct
+     * @uses                     GravityMedia\Stream\Stream
      *
      * @expectedException        \GravityMedia\Stream\Exception\IOException
      * @expectedExceptionMessage Unexpected result of operation
@@ -171,11 +179,15 @@ class StreamWriterTest extends \PHPUnit_Framework_TestCase
 
         $streamMock = $this->getMockBuilder('GravityMedia\Stream\Stream')
             ->disableOriginalConstructor()
-            ->setMethods(array('isWritable', 'getResource'))
+            ->setMethods(array('isWritable', 'isAccessible', 'getResource'))
             ->getMock();
 
         $streamMock->expects($this->once())
             ->method('isWritable')
+            ->will($this->returnValue(true));
+
+        $streamMock->expects($this->once())
+            ->method('isAccessible')
             ->will($this->returnValue(true));
 
         $streamMock->expects($this->once())
@@ -189,7 +201,7 @@ class StreamWriterTest extends \PHPUnit_Framework_TestCase
     /**
      * Test that the stream can be truncated
      *
-     * @uses GravityMedia\Stream\Stream::__destruct
+     * @uses GravityMedia\Stream\Stream
      */
     public function testTruncating()
     {
@@ -197,11 +209,15 @@ class StreamWriterTest extends \PHPUnit_Framework_TestCase
 
         $streamMock = $this->getMockBuilder('GravityMedia\Stream\Stream')
             ->disableOriginalConstructor()
-            ->setMethods(array('isWritable', 'getResource'))
+            ->setMethods(array('isWritable', 'isAccessible', 'getResource'))
             ->getMock();
 
         $streamMock->expects($this->once())
             ->method('isWritable')
+            ->will($this->returnValue(true));
+
+        $streamMock->expects($this->once())
+            ->method('isAccessible')
             ->will($this->returnValue(true));
 
         $streamMock->expects($this->once())

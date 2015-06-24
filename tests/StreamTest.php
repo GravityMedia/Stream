@@ -92,6 +92,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
         $uri = 'php://temp';
         $stream = new Stream($uri);
 
+        $this->assertTrue($stream->isAccessible());
         $this->assertTrue($stream->isReadable());
         $this->assertFalse($stream->isWritable());
         $this->assertTrue($stream->isSeekable());
