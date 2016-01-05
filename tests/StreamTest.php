@@ -18,40 +18,21 @@ use GravityMedia\Stream\Stream;
 class StreamTest extends \PHPUnit_Framework_TestCase
 {
     /**
-     * Test that the constructor throws an exception on invalid URI argument
+     * Test that the stream creation throws an exception on invalid resource argument
      *
      * @expectedException        \GravityMedia\Stream\Exception\IOException
-     * @expectedExceptionMessage Failed to open stream
+     * @expectedExceptionMessage Invalid resource
      */
-    public function testConstructorThrowsExceptionOnInvalidUriArgument()
+    public function testCreatingStreamThrowsExceptionOnInvalidResourceArgument()
     {
-        new Stream(false);
-    }
-
-    /**
-     * Test that the constructor binds the resource
-     */
-    public function testConstructorBindsResource()
-    {
-        $streamMock = $this->getMockBuilder('GravityMedia\Stream\Stream')
-            ->disableOriginalConstructor()
-            ->setMethods(array('bind'))
-            ->getMock();
-
-        $streamMock->expects($this->once())
-            ->method('bind')
-            ->with($this->isType('resource'));
-
-        $reflectedClass = new \ReflectionClass('GravityMedia\Stream\Stream');
-        $constructor = $reflectedClass->getConstructor();
-        $constructor->invoke($streamMock, 'php://input');
+        Stream::fromResource(null);
     }
 
     /**
      * Test that the an exception is thrown when trying to bind an invalid resources
      *
-     * @expectedException        \GravityMedia\Stream\Exception\InvalidArgumentException
-     * @expectedExceptionMessage Invalid stream resource
+     * @expectedException        \GravityMedia\Stream\Exception\IOException
+     * @expectedExceptionMessage Invalid resource
      */
     public function testBindingInvalidResourceThrowsException()
     {
@@ -65,8 +46,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     public function testStreamClosesResourceOnDestruct()
     {
         $resource = fopen('php://input', 'r');
-        $stream = new Stream();
-        $stream->bind($resource);
+        $stream = Stream::fromResource($resource);
         unset($stream);
 
         $this->assertFalse(is_resource($resource));
@@ -78,8 +58,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     public function testGettingResourceFromStream()
     {
         $resource = fopen('php://input', 'r');
-        $stream = new Stream();
-        $stream->bind($resource);
+        $stream = Stream::fromResource($resource);
 
         $this->assertEquals($resource, $stream->getResource());
     }
@@ -89,14 +68,13 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      */
     public function testConstructorInitializesMetaData()
     {
-        $uri = 'php://temp';
-        $stream = new Stream($uri);
+        $resource = fopen('php://temp', 'r');
+        $stream = Stream::fromResource($resource);
 
-        $this->assertTrue($stream->isAccessible());
         $this->assertTrue($stream->isReadable());
         $this->assertFalse($stream->isWritable());
         $this->assertTrue($stream->isSeekable());
-        $this->assertEquals($uri, $stream->getUri());
+        $this->assertEquals('php://temp', $stream->getUri());
         $this->assertEquals(0, $stream->getSize());
         $this->assertTrue($stream->isLocal());
     }
@@ -109,7 +87,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      * @expectedException        \GravityMedia\Stream\Exception\BadMethodCallException
      * @expectedExceptionMessage Operation not supported
      */
-    public function testGettingReaderThrowsExceptionOnNonReadableStreams()
+    public function testReadingThrowsExceptionOnNonReadableStreams()
     {
         $streamMock = $this->getMockBuilder('GravityMedia\Stream\Stream')
             ->disableOriginalConstructor()
@@ -121,19 +99,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue(false));
 
         /** @var \GravityMedia\Stream\Stream $streamMock */
-        $streamMock->getReader();
-    }
-
-    /**
-     * Test that a stream reader is returned
-     *
-     * @uses GravityMedia\Stream\StreamReader::__construct
-     */
-    public function testStreamReturnsReader()
-    {
-        $stream = new Stream('php://input', 'r');
-
-        $this->assertInstanceOf('GravityMedia\Stream\StreamReaderInterface', $stream->getReader());
+        $streamMock->read();
     }
 
     /**
@@ -144,7 +110,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      * @expectedException        \GravityMedia\Stream\Exception\BadMethodCallException
      * @expectedExceptionMessage Operation not supported
      */
-    public function testGettingWriterThrowsExceptionOnNonWritableStreams()
+    public function testWritingThrowsExceptionOnNonWritableStreams()
     {
         $streamMock = $this->getMockBuilder('GravityMedia\Stream\Stream')
             ->disableOriginalConstructor()
@@ -156,19 +122,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue(false));
 
         /** @var \GravityMedia\Stream\Stream $streamMock */
-        $streamMock->getWriter();
-    }
-
-    /**
-     * Test that a stream writer is returned
-     *
-     * @uses GravityMedia\Stream\StreamWriter::__construct
-     */
-    public function testStreamReturnsWriter()
-    {
-        $stream = new Stream('php://output', 'w');
-
-        $this->assertInstanceOf('GravityMedia\Stream\StreamWriterInterface', $stream->getWriter());
+        $streamMock->write(null);
     }
 
     /**
@@ -196,11 +150,12 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      * Test that getting the size from a closed stream throws an exception
      *
      * @expectedException        \GravityMedia\Stream\Exception\IOException
-     * @expectedExceptionMessage Invalid stream resource
+     * @expectedExceptionMessage Invalid resource
      */
     public function testGettingSizeThrowsExceptionOnClosedStream()
     {
-        $stream = new Stream('php://input');
+        $resource = fopen('php://input', 'r');
+        $stream = Stream::fromResource($resource);
         $stream->close();
 
         $stream->getSize();
@@ -214,7 +169,8 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      */
     public function testGettingSizeThrowsExceptionOnStreamWithNoStats()
     {
-        $stream = new Stream('php://input');
+        $resource = fopen('php://temp', 'r');
+        $stream = Stream::fromResource($resource);
 
         $stream->getSize();
     }
@@ -227,8 +183,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
         $resource = fopen('php://temp', 'w');
         fwrite($resource, 'contents');
 
-        $stream = new Stream();
-        $stream->bind($resource);
+        $stream = Stream::fromResource($resource);
 
         $this->assertEquals(8, $stream->getSize());
     }
@@ -237,11 +192,12 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      * Test that checking for the end of stream throws an exception on closed stream
      *
      * @expectedException        \GravityMedia\Stream\Exception\IOException
-     * @expectedExceptionMessage Invalid stream resource
+     * @expectedExceptionMessage Invalid resource
      */
     public function testEndOfStreamThrowsExceptionOnClosedStream()
     {
-        $stream = new Stream('php://temp');
+        $resource = fopen('php://temp', 'r');
+        $stream = Stream::fromResource($resource);
         $stream->close();
 
         $stream->eof();
@@ -255,8 +211,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
         $resource = fopen('php://temp', 'r');
         fread($resource, 1);
 
-        $stream = new Stream();
-        $stream->bind($resource);
+        $stream = Stream::fromResource($resource);
 
         $this->assertTrue($stream->eof());
     }
@@ -265,11 +220,12 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      * Test that locating the position on a closed stream throws an exception
      *
      * @expectedException        \GravityMedia\Stream\Exception\IOException
-     * @expectedExceptionMessage Invalid stream resource
+     * @expectedExceptionMessage Invalid resource
      */
     public function testLocatingPositionThrowsExceptionOnClosedStream()
     {
-        $stream = new Stream('php://temp');
+        $resource = fopen('php://temp', 'r');
+        $stream = Stream::fromResource($resource);
         $stream->close();
 
         $stream->tell();
@@ -285,8 +241,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
         fwrite($resource, 'contents');
         fseek($resource, $position);
 
-        $stream = new Stream();
-        $stream->bind($resource);
+        $stream = Stream::fromResource($resource);
 
         $this->assertEquals($position, $stream->tell());
     }
@@ -316,11 +271,12 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      * Test that seeking on a closed stream throws an exception
      *
      * @expectedException        \GravityMedia\Stream\Exception\IOException
-     * @expectedExceptionMessage Invalid stream resource
+     * @expectedExceptionMessage Invalid resource
      */
     public function testSeekingPositionThrowsExceptionOnClosedStream()
     {
-        $stream = new Stream('php://temp');
+        $resource = fopen('php://temp', 'r');
+        $stream = Stream::fromResource($resource);
         $stream->close();
 
         $stream->seek(0);
@@ -334,7 +290,8 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      */
     public function testSeekingPositionThrowsExceptionOnInvalidOffset()
     {
-        $stream = new Stream('php://temp');
+        $resource = fopen('php://temp', 'r');
+        $stream = Stream::fromResource($resource);
 
         $stream->seek(-1);
     }
@@ -347,8 +304,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
         $resource = fopen('php://temp', 'r+');
         fwrite($resource, 'contents');
 
-        $stream = new Stream();
-        $stream->bind($resource);
+        $stream = Stream::fromResource($resource);
 
         $this->assertEquals(0, $stream->seek(-8, SEEK_END));
     }
@@ -361,10 +317,255 @@ class StreamTest extends \PHPUnit_Framework_TestCase
         $resource = fopen('php://temp', 'r+');
         fwrite($resource, 'contents');
 
-        $stream = new Stream();
-        $stream->bind($resource);
+        $stream = Stream::fromResource($resource);
 
         $this->assertEquals(0, $stream->rewind());
+    }
+
+    /**
+     * Test that reading data from a closed stream throws an exception
+     *
+     * @expectedException        \GravityMedia\Stream\Exception\IOException
+     * @expectedExceptionMessage Invalid resource
+     */
+    public function testReadingDataThrowsExceptionOnClosedStream()
+    {
+        $resource = fopen('php://temp', 'r');
+        fclose($resource);
+
+        $streamMock = $this->getMockBuilder('GravityMedia\Stream\Stream')
+            ->disableOriginalConstructor()
+            ->setMethods(array('isReadable', 'getResource'))
+            ->getMock();
+
+        $streamMock->expects($this->once())
+            ->method('isReadable')
+            ->will($this->returnValue(true));
+
+        $streamMock->expects($this->once())
+            ->method('getResource')
+            ->will($this->returnValue($resource));
+
+        /** @var \GravityMedia\Stream\Stream $streamMock */
+        $streamMock->read();
+    }
+
+    /**
+     * Test that reading data from an empty stream throws an exception
+     *
+     * @expectedException        \GravityMedia\Stream\Exception\IOException
+     * @expectedExceptionMessage Unexpected result of operation
+     */
+    public function testReadingDataThrowsExceptionOnInvalidLength()
+    {
+        $resource = fopen('php://input', 'r');
+
+        $streamMock = $this->getMockBuilder('GravityMedia\Stream\Stream')
+            ->disableOriginalConstructor()
+            ->setMethods(array('isReadable', 'getResource'))
+            ->getMock();
+
+        $streamMock->expects($this->once())
+            ->method('isReadable')
+            ->will($this->returnValue(true));
+
+        $streamMock->expects($this->once())
+            ->method('getResource')
+            ->will($this->returnValue($resource));
+
+        /** @var \GravityMedia\Stream\Stream $streamMock */
+        $streamMock->read(0);
+    }
+
+    /**
+     * Test that the data can be read
+     */
+    public function testReadingData()
+    {
+        $data = 'contents';
+        $resource = fopen('php://temp', 'r+');
+        fwrite($resource, $data);
+        fseek($resource, 0);
+
+        $streamMock = $this->getMockBuilder('GravityMedia\Stream\Stream')
+            ->disableOriginalConstructor()
+            ->setMethods(array('isReadable', 'getResource'))
+            ->getMock();
+
+        $streamMock->expects($this->once())
+            ->method('isReadable')
+            ->will($this->returnValue(true));
+
+        $streamMock->expects($this->once())
+            ->method('getResource')
+            ->will($this->returnValue($resource));
+
+        /** @var \GravityMedia\Stream\Stream $streamMock */
+        $this->assertEquals($data, $streamMock->read(8));
+    }
+
+    /**
+     * Test that writing data to a closed stream throws an exception
+     *
+     * @expectedException        \GravityMedia\Stream\Exception\IOException
+     * @expectedExceptionMessage Invalid resource
+     */
+    public function testWritingDataThrowsExceptionOnClosedStream()
+    {
+        $resource = fopen('php://temp', 'w');
+        fclose($resource);
+
+        $streamMock = $this->getMockBuilder('GravityMedia\Stream\Stream')
+            ->disableOriginalConstructor()
+            ->setMethods(array('isWritable', 'getResource'))
+            ->getMock();
+
+        $streamMock->expects($this->once())
+            ->method('isWritable')
+            ->will($this->returnValue(true));
+
+        $streamMock->expects($this->once())
+            ->method('getResource')
+            ->will($this->returnValue($resource));
+
+        /** @var \GravityMedia\Stream\Stream $streamMock */
+        $streamMock->write('contents');
+    }
+
+    /**
+     * Test that writing invalid data to a stream throws an exception
+     *
+     * @expectedException        \GravityMedia\Stream\Exception\IOException
+     * @expectedExceptionMessage Unexpected result of operation
+     */
+    public function testWritingDataThrowsExceptionOnInvalidData()
+    {
+        $resource = fopen('php://temp', 'w');
+
+        $streamMock = $this->getMockBuilder('GravityMedia\Stream\Stream')
+            ->disableOriginalConstructor()
+            ->setMethods(array('isWritable', 'getResource'))
+            ->getMock();
+
+        $streamMock->expects($this->once())
+            ->method('isWritable')
+            ->will($this->returnValue(true));
+
+        $streamMock->expects($this->once())
+            ->method('getResource')
+            ->will($this->returnValue($resource));
+
+        /** @var \GravityMedia\Stream\Stream $streamMock */
+        $streamMock->write(new \stdClass());
+    }
+
+    /**
+     * Test that the data can be written and the length is returned
+     */
+    public function testWritingData()
+    {
+        $resource = fopen('php://temp', 'w');
+
+        $streamMock = $this->getMockBuilder('GravityMedia\Stream\Stream')
+            ->disableOriginalConstructor()
+            ->setMethods(array('isWritable', 'getResource'))
+            ->getMock();
+
+        $streamMock->expects($this->once())
+            ->method('isWritable')
+            ->will($this->returnValue(true));
+
+        $streamMock->expects($this->once())
+            ->method('getResource')
+            ->will($this->returnValue($resource));
+
+        /** @var \GravityMedia\Stream\Stream $streamMock */
+        $this->assertEquals(8, $streamMock->write('contents'));
+
+        fclose($resource);
+    }
+
+    /**
+     * Test that truncating a closed stream throws an exception
+     *
+     * @expectedException        \GravityMedia\Stream\Exception\IOException
+     * @expectedExceptionMessage Invalid resource
+     */
+    public function testTruncatingThrowsExceptionOnClosedStream()
+    {
+        $resource = fopen('php://temp', 'w');
+        fclose($resource);
+
+        $streamMock = $this->getMockBuilder('GravityMedia\Stream\Stream')
+            ->disableOriginalConstructor()
+            ->setMethods(array('isWritable', 'getResource'))
+            ->getMock();
+
+        $streamMock->expects($this->once())
+            ->method('isWritable')
+            ->will($this->returnValue(true));
+
+        $streamMock->expects($this->once())
+            ->method('getResource')
+            ->will($this->returnValue($resource));
+
+        /** @var \GravityMedia\Stream\Stream $streamMock */
+        $streamMock->truncate(8);
+    }
+
+    /**
+     * Test that truncating a closed stream throws an exception
+     *
+     * @expectedException        \GravityMedia\Stream\Exception\IOException
+     * @expectedExceptionMessage Unexpected result of operation
+     */
+    public function testTruncatingThrowsExceptionOnInvalidSize()
+    {
+        $resource = fopen('php://temp', 'w');
+
+        $streamMock = $this->getMockBuilder('GravityMedia\Stream\Stream')
+            ->disableOriginalConstructor()
+            ->setMethods(array('isWritable', 'getResource'))
+            ->getMock();
+
+        $streamMock->expects($this->once())
+            ->method('isWritable')
+            ->will($this->returnValue(true));
+
+        $streamMock->expects($this->once())
+            ->method('getResource')
+            ->will($this->returnValue($resource));
+
+        /** @var \GravityMedia\Stream\Stream $streamMock */
+        $streamMock->truncate(new \stdClass());
+    }
+
+    /**
+     * Test that the stream can be truncated
+     */
+    public function testTruncating()
+    {
+        $resource = fopen('php://temp', 'w+');
+
+        $streamMock = $this->getMockBuilder('GravityMedia\Stream\Stream')
+            ->disableOriginalConstructor()
+            ->setMethods(array('isWritable', 'getResource'))
+            ->getMock();
+
+        $streamMock->expects($this->once())
+            ->method('isWritable')
+            ->will($this->returnValue(true));
+
+        $streamMock->expects($this->once())
+            ->method('getResource')
+            ->will($this->returnValue($resource));
+
+        /** @var \GravityMedia\Stream\Stream $streamMock */
+        $streamMock->truncate(8);
+
+        $this->assertEquals(str_repeat("\x00", 8), stream_get_contents($resource));
+
+        fclose($resource);
     }
 
     /**
@@ -373,8 +574,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     public function testCloseStreamResource()
     {
         $resource = fopen('php://input', 'r');
-        $stream = new Stream();
-        $stream->bind($resource);
+        $stream = Stream::fromResource($resource);
         $stream->close();
 
         $this->assertFalse(is_resource($resource));

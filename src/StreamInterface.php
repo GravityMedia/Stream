@@ -21,7 +21,7 @@ interface StreamInterface
      *
      * @param resource $resource The resource to bind to the stream
      *
-     * @throws Exception\InvalidArgumentException An exception will be thrown when the resource is invalid
+     * @throws Exception\IOException An exception will be thrown for invalid stream resources
      *
      * @return $this
      */
@@ -35,11 +35,11 @@ interface StreamInterface
     public function getResource();
 
     /**
-     * Return whether the stream resource is accessible
+     * Return whether the stream is local
      *
-     * @return mixed
+     * @return bool
      */
-    public function isAccessible();
+    public function isLocal();
 
     /**
      * Return whether read access on the stream will be granted
@@ -68,31 +68,6 @@ interface StreamInterface
      * @return string
      */
     public function getUri();
-
-    /**
-     * Return whether the stream is local
-     *
-     * @return bool
-     */
-    public function isLocal();
-
-    /**
-     * Get stream reader
-     *
-     * @throws Exception\BadMethodCallException An exception will be thrown for non-readable streams
-     *
-     * @return StreamReaderInterface
-     */
-    public function getReader();
-
-    /**
-     * Get stream writer
-     *
-     * @throws Exception\BadMethodCallException An exception will be thrown for non-writable streams
-     *
-     * @return StreamWriterInterface
-     */
-    public function getWriter();
 
     /**
      * Get size of the stream in bytes
@@ -150,6 +125,49 @@ interface StreamInterface
      * @return int
      */
     public function rewind();
+
+    /**
+     * Read up to $length number of bytes of data from the stream
+     *
+     * @param int $length The maximum number of bytes to read (default is 1)
+     *
+     * @throws Exception\BadMethodCallException An exception will be thrown for non-readable streams
+     * @throws Exception\IOException            An exception will be thrown for invalid stream resources or when the
+     *                                          data could not be read
+     *
+     * @return string
+     * @link   http://www.php.net/manual/en/function.fread.php
+     */
+    public function read($length = 1);
+
+
+    /**
+     * Write data to the stream and returns the number of bytes written
+     *
+     * @param string $data The data
+     *
+     * @throws Exception\BadMethodCallException An exception will be thrown for non-writable streams
+     * @throws Exception\IOException            An exception will be thrown for invalid stream resources or when the
+     *                                          data could not be written
+     *
+     * @return int
+     * @link   http://www.php.net/manual/en/function.fwrite.php
+     */
+    public function write($data);
+
+    /**
+     * Truncates the stream to a given length
+     *
+     * @param int $size The size to truncate to
+     *
+     * @throws Exception\BadMethodCallException An exception will be thrown for non-writable streams
+     * @throws Exception\IOException            An exception will be thrown for invalid stream resources or when the
+     *                                          stream could not be truncated
+     *
+     * @return $this
+     * @link   http://www.php.net/manual/en/function.ftruncate.php
+     */
+    public function truncate($size);
 
     /**
      * Close the stream
