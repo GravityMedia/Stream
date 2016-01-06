@@ -8,6 +8,7 @@
 namespace GravityMedia\Stream;
 
 use GravityMedia\Stream\Exception;
+use GravityMedia\Stream\Reader\StringReader;
 
 /**
  * Stream
@@ -57,6 +58,11 @@ class Stream implements StreamInterface
      * @var string
      */
     protected $uri;
+
+    /**
+     * @var StringReader
+     */
+    protected $stringReader;
 
     /**
      * Create stream object from resource
@@ -155,6 +161,34 @@ class Stream implements StreamInterface
     }
 
     /**
+     * Get string reader
+     *
+     * @return StringReader
+     */
+    public function getStringReader()
+    {
+        if (null === $this->stringReader) {
+            $this->stringReader = new StringReader();
+        }
+
+        return $this->stringReader;
+    }
+
+    /**
+     * Set string reader
+     *
+     * @param StringReader $stringReader
+     *
+     * @return $this
+     */
+    public function setStringReader(StringReader $stringReader)
+    {
+        $this->stringReader = $stringReader;
+
+        return $this;
+    }
+
+    /**
      * Get information about the stream
      *
      * @param string $info The information to retrieve
@@ -183,7 +217,7 @@ class Stream implements StreamInterface
     public function getSize()
     {
         if (!$this->isLocal()) {
-            throw new Exception\BadMethodCallException('Operation not supported');
+            throw new Exception\BadMethodCallException('Stream not local');
         }
 
         return $this->getStat('size');
@@ -213,7 +247,7 @@ class Stream implements StreamInterface
         $resource = $this->getResource();
 
         if (!$this->isSeekable()) {
-            throw new Exception\BadMethodCallException('Operation not supported');
+            throw new Exception\BadMethodCallException('Stream not seekable');
         }
 
         if (fseek($resource, $offset, $whence) < 0) {
@@ -234,12 +268,12 @@ class Stream implements StreamInterface
     /**
      * {@inheritdoc}
      */
-    public function read($length = 1)
+    public function read($length)
     {
         $resource = $this->getResource();
 
         if (!$this->isReadable()) {
-            throw new Exception\BadMethodCallException('Operation not supported');
+            throw new Exception\BadMethodCallException('Stream not readable');
         }
 
         $data = @fread($resource, $length);
@@ -253,12 +287,23 @@ class Stream implements StreamInterface
     /**
      * {@inheritdoc}
      */
+    public function readString($length = 1)
+    {
+        return $this->getStringReader()
+            ->setStream($this)
+            ->setLength($length)
+            ->read();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function write($data)
     {
         $resource = $this->getResource();
 
         if (!$this->isWritable()) {
-            throw new Exception\BadMethodCallException('Operation not supported');
+            throw new Exception\BadMethodCallException('Stream not writable');
         }
 
         $length = @fwrite($resource, $data);
@@ -277,7 +322,7 @@ class Stream implements StreamInterface
         $resource = $this->getResource();
 
         if (!$this->isWritable()) {
-            throw new Exception\BadMethodCallException('Operation not supported');
+            throw new Exception\BadMethodCallException('Stream not writable');
         }
 
         return @ftruncate($resource, $size);

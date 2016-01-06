@@ -13,7 +13,10 @@ use GravityMedia\Stream\Stream;
  * Stream test
  *
  * @package GravityMedia\StreamTest
+ *
  * @covers  GravityMedia\Stream\Stream
+ *
+ * @uses    GravityMedia\Stream\Reader\StringReader
  */
 class StreamTest extends \PHPUnit_Framework_TestCase
 {
@@ -117,10 +120,36 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * Test that a string reader can be obtained from the stream
+     */
+    public function testGettingStringReader()
+    {
+        $resource = $this->getResource();
+        $stream = Stream::fromResource($resource);
+
+        $this->assertInstanceOf('GravityMedia\Stream\Reader\StringReader', $stream->getStringReader());
+    }
+
+    /**
+     * Test that the string reader equals the one which was previously set
+     */
+    public function testSettingStringReader()
+    {
+        $resource = $this->getResource();
+        $stream = Stream::fromResource($resource);
+        $readerMock = $this->getMock('GravityMedia\Stream\Reader\StringReader');
+
+        /** @var \GravityMedia\Stream\Reader\StringReader $readerMock */
+        $this->assertEquals($stream, $stream->setStringReader($readerMock));
+        $this->assertEquals($readerMock, $stream->getStringReader());
+
+    }
+
+    /**
      * Test that getting the size from a non-local stream throws an exception
      *
      * @expectedException        \GravityMedia\Stream\Exception\BadMethodCallException
-     * @expectedExceptionMessage Operation not supported
+     * @expectedExceptionMessage Stream not local
      */
     public function testGettingSizeThrowsExceptionOnNonLocalStream()
     {
@@ -219,7 +248,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      * Test that seeking on a non-seekable stream throws an exception
      *
      * @expectedException        \GravityMedia\Stream\Exception\BadMethodCallException
-     * @expectedExceptionMessage Operation not supported
+     * @expectedExceptionMessage Stream not seekable
      */
     public function testSeekingPositionThrowsExceptionOnNonSeekableStream()
     {
@@ -302,14 +331,14 @@ class StreamTest extends \PHPUnit_Framework_TestCase
         $stream = Stream::fromResource($resource);
         fclose($resource);
 
-        $stream->read();
+        $stream->read(1);
     }
 
     /**
      * Test that reading data from a non-readable stream throws an exception
      *
      * @expectedException        \GravityMedia\Stream\Exception\BadMethodCallException
-     * @expectedExceptionMessage Operation not supported
+     * @expectedExceptionMessage Stream not readable
      */
     public function testReadingDataThrowsExceptionOnNonReadableStream()
     {
@@ -326,7 +355,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue(false));
 
         /** @var \GravityMedia\Stream\StreamInterface $streamMock */
-        $streamMock->read();
+        $streamMock->read(1);
     }
 
     /**
@@ -355,6 +384,17 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * Test that the string data can be read
+     */
+    public function testReadingStringData()
+    {
+        $resource = $this->getResource('contents');
+        $stream = Stream::fromResource($resource);
+
+        $this->assertEquals('contents', $stream->readString(8));
+    }
+
+    /**
      * Test that writing data to a closed stream throws an exception
      *
      * @expectedException        \GravityMedia\Stream\Exception\IOException
@@ -373,7 +413,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      * Test that writing data to a non-writable stream throws an exception
      *
      * @expectedException        \GravityMedia\Stream\Exception\BadMethodCallException
-     * @expectedExceptionMessage Operation not supported
+     * @expectedExceptionMessage Stream not writable
      */
     public function testWritingDataThrowsExceptionOnNonWritableStream()
     {
@@ -437,7 +477,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      * Test that truncating a non-writable stream throws an exception
      *
      * @expectedException        \GravityMedia\Stream\Exception\BadMethodCallException
-     * @expectedExceptionMessage Operation not supported
+     * @expectedExceptionMessage Stream not writable
      */
     public function testTruncatingThrowsExceptionOnNonWritableStream()
     {
