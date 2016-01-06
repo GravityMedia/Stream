@@ -23,5 +23,5 @@ We accept contributions via Pull Requests on [Github](https://github.com/Gravity
 ## Running Tests
 
 ``` bash
-$ php vendor/bin/phpunit --coverage-text
+$ php vendor/bin/phpunit --coverage-text --verbose
 ```
