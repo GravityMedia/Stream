@@ -25,10 +25,10 @@ interface StreamInterface
      *
      * @return $this
      */
-    public function bind($resource);
+    public function bindResource($resource);
 
     /**
-     * Get resource
+     * Get resource from stream
      *
      * @return resource
      */
@@ -56,7 +56,7 @@ interface StreamInterface
     public function isWritable();
 
     /**
-     * Return whether the stream can be seeked
+     * Return whether the stream can be sought
      *
      * @return bool
      */
@@ -101,7 +101,7 @@ interface StreamInterface
     public function tell();
 
     /**
-     * Seeks and returns the position of the stream
+     * Seek and return the position of the stream
      *
      * @param int $offset The offset
      * @param int $whence Either SEEK_SET (which is default), SEEK_CUR or SEEK_END
@@ -142,7 +142,7 @@ interface StreamInterface
 
 
     /**
-     * Write data to the stream and returns the number of bytes written
+     * Write data to the stream and return the number of bytes written
      *
      * @param string $data The data
      *
@@ -156,7 +156,7 @@ interface StreamInterface
     public function write($data);
 
     /**
-     * Truncates the stream to a given length
+     * Truncate the stream to a given length
      *
      * @param int $size The size to truncate to
      *
@@ -164,7 +164,7 @@ interface StreamInterface
      * @throws Exception\IOException            An exception will be thrown for invalid stream resources or when the
      *                                          stream could not be truncated
      *
-     * @return $this
+     * @return bool
      * @link   http://www.php.net/manual/en/function.ftruncate.php
      */
     public function truncate($size);

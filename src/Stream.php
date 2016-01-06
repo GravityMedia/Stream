@@ -19,14 +19,14 @@ class Stream implements StreamInterface
     /**
      * @var string[]
      */
-    protected static $readModes = array('r', 'w+', 'r+', 'x+', 'c+', 'rb', 'w+b', 'r+b', 'x+b', 'c+b', 'rt', 'w+t',
-        'r+t', 'x+t', 'c+t', 'a+');
+    private static $readModes = ['r', 'w+', 'r+', 'x+', 'c+', 'rb', 'w+b', 'r+b', 'x+b', 'c+b', 'rt', 'w+t',
+        'r+t', 'x+t', 'c+t', 'a+'];
 
     /**
      * @var string[]
      */
-    protected static $writeModes = array('w', 'w+', 'rw', 'r+', 'x+', 'c+', 'wb', 'w+b', 'r+b', 'x+b', 'c+b', 'w+t',
-        'r+t', 'x+t', 'c+t', 'a', 'a+');
+    private static $writeModes = ['w', 'w+', 'rw', 'r+', 'x+', 'c+', 'wb', 'w+b', 'r+b', 'x+b', 'c+b', 'w+t',
+        'r+t', 'x+t', 'c+t', 'a', 'a+'];
 
     /**
      * @var resource
@@ -69,41 +69,41 @@ class Stream implements StreamInterface
     {
         $instance = new static();
 
-        return $instance->bind($resource);
+        return $instance->bindResource($resource);
     }
 
     /**
-     * Destroy a stream object
+     * Get meta data from the stream
+     *
+     * @throws Exception\IOException An exception will be thrown for invalid stream resources
+     *
+     * @return array
      */
-    public function __destruct()
+    protected function getMetaData()
     {
-        if (!is_resource($this->resource)) {
-            return;
-        }
-
-        @fclose($this->resource);
+        return stream_get_meta_data($this->getResource());
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
-    public function bind($resource)
+    public function bindResource($resource)
     {
         $this->resource = $resource;
 
         $this->local = stream_is_local($this->getResource());
 
-        $meta = stream_get_meta_data($this->getResource());
-        $this->readable = in_array($meta['mode'], self::$readModes);
-        $this->writable = in_array($meta['mode'], self::$writeModes);
-        $this->seekable = $meta['seekable'];
-        $this->uri = $meta['uri'];
+        $metaData = $this->getMetaData();
+        $this->readable = in_array($metaData['mode'], self::$readModes);
+        $this->writable = in_array($metaData['mode'], self::$writeModes);
+        $this->seekable = $metaData['seekable'];
+        $this->uri = $metaData['uri'];
 
         return $this;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getResource()
     {
@@ -115,7 +115,7 @@ class Stream implements StreamInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function isLocal()
     {
@@ -123,7 +123,7 @@ class Stream implements StreamInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function isReadable()
     {
@@ -131,7 +131,7 @@ class Stream implements StreamInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function isWritable()
     {
@@ -139,7 +139,7 @@ class Stream implements StreamInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function isSeekable()
     {
@@ -147,7 +147,7 @@ class Stream implements StreamInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getUri()
     {
@@ -155,7 +155,30 @@ class Stream implements StreamInterface
     }
 
     /**
-     * @inheritdoc
+     * Get information about the stream
+     *
+     * @param string $info The information to retrieve
+     *
+     * @throws Exception\IOException An exception will be thrown for invalid stream resources
+     *
+     * @return int
+     */
+    protected function getStat($info)
+    {
+        $resource = $this->getResource();
+
+        $uri = $this->getUri();
+        if (is_string($uri)) {
+            clearstatcache(true, $uri);
+        }
+
+        $stat = fstat($resource);
+
+        return $stat[$info];
+    }
+
+    /**
+     * {@inheritdoc}
      */
     public function getSize()
     {
@@ -163,21 +186,11 @@ class Stream implements StreamInterface
             throw new Exception\BadMethodCallException('Operation not supported');
         }
 
-        $uri = $this->getUri();
-        if (is_string($uri)) {
-            clearstatcache(true, $uri);
-        }
-
-        $stats = @fstat($this->getResource());
-        if (!is_array($stats) || !isset($stats['size'])) {
-            throw new Exception\IOException('Unexpected result of operation');
-        }
-
-        return $stats['size'];
+        return $this->getStat('size');
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function eof()
     {
@@ -185,7 +198,7 @@ class Stream implements StreamInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function tell()
     {
@@ -193,15 +206,17 @@ class Stream implements StreamInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function seek($offset, $whence = SEEK_SET)
     {
+        $resource = $this->getResource();
+
         if (!$this->isSeekable()) {
             throw new Exception\BadMethodCallException('Operation not supported');
         }
 
-        if (fseek($this->getResource(), $offset, $whence) < 0) {
+        if (fseek($resource, $offset, $whence) < 0) {
             throw new Exception\IOException('Unexpected result of operation');
         }
 
@@ -209,7 +224,7 @@ class Stream implements StreamInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function rewind()
     {
@@ -217,15 +232,17 @@ class Stream implements StreamInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function read($length = 1)
     {
+        $resource = $this->getResource();
+
         if (!$this->isReadable()) {
             throw new Exception\BadMethodCallException('Operation not supported');
         }
 
-        $data = @fread($this->getResource(), $length);
+        $data = @fread($resource, $length);
         if (false === $data) {
             throw new Exception\IOException('Unexpected result of operation');
         }
@@ -234,15 +251,17 @@ class Stream implements StreamInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function write($data)
     {
+        $resource = $this->getResource();
+
         if (!$this->isWritable()) {
             throw new Exception\BadMethodCallException('Operation not supported');
         }
 
-        $length = @fwrite($this->getResource(), $data);
+        $length = @fwrite($resource, $data);
         if (false === $length) {
             throw new Exception\IOException('Unexpected result of operation');
         }
@@ -251,23 +270,21 @@ class Stream implements StreamInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function truncate($size)
     {
+        $resource = $this->getResource();
+
         if (!$this->isWritable()) {
             throw new Exception\BadMethodCallException('Operation not supported');
         }
 
-        if (!@ftruncate($this->getResource(), $size)) {
-            throw new Exception\IOException('Unexpected result of operation');
-        }
-
-        return $this;
+        return @ftruncate($resource, $size);
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function close()
     {
