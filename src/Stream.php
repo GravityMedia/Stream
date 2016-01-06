@@ -19,14 +19,24 @@ class Stream implements StreamInterface
     /**
      * @var string[]
      */
-    protected static $readModes = array('r', 'w+', 'r+', 'x+', 'c+', 'rb', 'w+b', 'r+b', 'x+b', 'c+b', 'rt', 'w+t',
-        'r+t', 'x+t', 'c+t', 'a+');
+    private static $readModes = ['r', 'w+', 'r+', 'x+', 'c+', 'rb', 'w+b', 'r+b', 'x+b', 'c+b', 'rt', 'w+t',
+        'r+t', 'x+t', 'c+t', 'a+'];
 
     /**
      * @var string[]
      */
-    protected static $writeModes = array('w', 'w+', 'rw', 'r+', 'x+', 'c+', 'wb', 'w+b', 'r+b', 'x+b', 'c+b', 'w+t',
-        'r+t', 'x+t', 'c+t', 'a', 'a+');
+    private static $writeModes = ['w', 'w+', 'rw', 'r+', 'x+', 'c+', 'wb', 'w+b', 'r+b', 'x+b', 'c+b', 'w+t',
+        'r+t', 'x+t', 'c+t', 'a', 'a+'];
+
+    /**
+     * @var resource
+     */
+    protected $resource;
+
+    /**
+     * @var bool
+     */
+    protected $local;
 
     /**
      * @var bool
@@ -49,131 +59,63 @@ class Stream implements StreamInterface
     protected $uri;
 
     /**
-     * @var bool
-     */
-    protected $local;
-
-    /**
-     * @var resource
-     */
-    protected $resource;
-
-    /**
-     * @var StreamReaderInterface
-     */
-    protected $reader;
-
-    /**
-     * @var StreamWriterInterface
-     */
-    protected $writer;
-
-    /**
-     * Create a stream object
+     * Create stream object from resource
      *
-     * @param string $uri  The URI which describes the stream (default is null; resource must be bound manually)
-     * @param string $mode The mode specifies the type of access you require to the stream (default is rb)
+     * @param resource $resource
      *
-     * @throws Exception\IOException An exception will be thrown when the stream could not be opened
+     * @return StreamInterface
      */
-    public function __construct($uri = null, $mode = 'rb')
+    public static function fromResource($resource)
     {
-        if (null === $uri) {
-            return;
-        }
+        $instance = new static();
 
-        $resource = @fopen($uri, $mode);
-        if (!is_resource($resource)) {
-            throw new Exception\IOException('Failed to open stream');
-        }
-
-        $this->bind($resource);
+        return $instance->bindResource($resource);
     }
 
     /**
-     * Destroy a stream object
+     * Get meta data from the stream
+     *
+     * @throws Exception\IOException An exception will be thrown for invalid stream resources
+     *
+     * @return array
      */
-    public function __destruct()
+    protected function getMetaData()
     {
-        if (!$this->isAccessible()) {
-            return;
-        }
-
-        $this->close();
+        return stream_get_meta_data($this->getResource());
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
-    public function bind($resource)
+    public function bindResource($resource)
     {
-        if (!is_resource($resource)) {
-            throw new Exception\InvalidArgumentException('Invalid stream resource');
-        }
-
-        $meta = stream_get_meta_data($resource);
-        $this->readable = in_array($meta['mode'], self::$readModes);
-        $this->writable = in_array($meta['mode'], self::$writeModes);
-        $this->seekable = $meta['seekable'];
-        $this->uri = $meta['uri'];
-        $this->local = stream_is_local($resource);
         $this->resource = $resource;
-        $this->reader = null;
-        $this->writer = null;
+
+        $this->local = stream_is_local($this->getResource());
+
+        $metaData = $this->getMetaData();
+        $this->readable = in_array($metaData['mode'], self::$readModes);
+        $this->writable = in_array($metaData['mode'], self::$writeModes);
+        $this->seekable = $metaData['seekable'];
+        $this->uri = $metaData['uri'];
 
         return $this;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getResource()
     {
+        if (!is_resource($this->resource)) {
+            throw new Exception\IOException('Invalid resource');
+        }
+
         return $this->resource;
     }
 
     /**
-     * @inheritdoc
-     */
-    public function isAccessible()
-    {
-        return is_resource($this->resource);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function isReadable()
-    {
-        return $this->readable;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function isWritable()
-    {
-        return $this->writable;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function isSeekable()
-    {
-        return $this->seekable;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getUri()
-    {
-        return $this->uri;
-    }
-
-    /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function isLocal()
     {
@@ -181,39 +123,62 @@ class Stream implements StreamInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
-    public function getReader()
+    public function isReadable()
     {
-        if (null === $this->reader) {
-            try {
-                $this->reader = new StreamReader($this);
-            } catch (Exception\InvalidArgumentException $exception) {
-                throw new Exception\BadMethodCallException('Operation not supported', 0, $exception);
-            }
-        }
-
-        return $this->reader;
+        return $this->readable;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
-    public function getWriter()
+    public function isWritable()
     {
-        if (null === $this->writer) {
-            try {
-                $this->writer = new StreamWriter($this);
-            } catch (Exception\InvalidArgumentException $exception) {
-                throw new Exception\BadMethodCallException('Operation not supported', 0, $exception);
-            }
-        }
-
-        return $this->writer;
+        return $this->writable;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     */
+    public function isSeekable()
+    {
+        return $this->seekable;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getUri()
+    {
+        return $this->uri;
+    }
+
+    /**
+     * Get information about the stream
+     *
+     * @param string $info The information to retrieve
+     *
+     * @throws Exception\IOException An exception will be thrown for invalid stream resources
+     *
+     * @return int
+     */
+    protected function getStat($info)
+    {
+        $resource = $this->getResource();
+
+        $uri = $this->getUri();
+        if (is_string($uri)) {
+            clearstatcache(true, $uri);
+        }
+
+        $stat = fstat($resource);
+
+        return $stat[$info];
+    }
+
+    /**
+     * {@inheritdoc}
      */
     public function getSize()
     {
@@ -221,61 +186,37 @@ class Stream implements StreamInterface
             throw new Exception\BadMethodCallException('Operation not supported');
         }
 
-        if (!$this->isAccessible()) {
-            throw new Exception\IOException('Invalid stream resource');
-        }
-
-        $uri = $this->getUri();
-        if (is_string($uri)) {
-            clearstatcache(true, $uri);
-        }
-
-        $stats = @fstat($this->getResource());
-        if (!is_array($stats) || !isset($stats['size'])) {
-            throw new Exception\IOException('Unexpected result of operation');
-        }
-
-        return $stats['size'];
+        return $this->getStat('size');
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function eof()
     {
-        if (!$this->isAccessible()) {
-            throw new Exception\IOException('Invalid stream resource');
-        }
-
         return feof($this->getResource());
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function tell()
     {
-        if (!$this->isAccessible()) {
-            throw new Exception\IOException('Invalid stream resource');
-        }
-
         return ftell($this->getResource());
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function seek($offset, $whence = SEEK_SET)
     {
+        $resource = $this->getResource();
+
         if (!$this->isSeekable()) {
             throw new Exception\BadMethodCallException('Operation not supported');
         }
 
-        if (!$this->isAccessible()) {
-            throw new Exception\IOException('Invalid stream resource');
-        }
-
-        if (fseek($this->getResource(), $offset, $whence) < 0) {
+        if (fseek($resource, $offset, $whence) < 0) {
             throw new Exception\IOException('Unexpected result of operation');
         }
 
@@ -283,7 +224,7 @@ class Stream implements StreamInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function rewind()
     {
@@ -291,10 +232,62 @@ class Stream implements StreamInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     */
+    public function read($length = 1)
+    {
+        $resource = $this->getResource();
+
+        if (!$this->isReadable()) {
+            throw new Exception\BadMethodCallException('Operation not supported');
+        }
+
+        $data = @fread($resource, $length);
+        if (false === $data) {
+            throw new Exception\IOException('Unexpected result of operation');
+        }
+
+        return $data;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function write($data)
+    {
+        $resource = $this->getResource();
+
+        if (!$this->isWritable()) {
+            throw new Exception\BadMethodCallException('Operation not supported');
+        }
+
+        $length = @fwrite($resource, $data);
+        if (false === $length) {
+            throw new Exception\IOException('Unexpected result of operation');
+        }
+
+        return $length;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function truncate($size)
+    {
+        $resource = $this->getResource();
+
+        if (!$this->isWritable()) {
+            throw new Exception\BadMethodCallException('Operation not supported');
+        }
+
+        return @ftruncate($resource, $size);
+    }
+
+    /**
+     * {@inheritdoc}
      */
     public function close()
     {
-        return @fclose($this->getResource());
+        return @fclose($this->resource);
     }
 }

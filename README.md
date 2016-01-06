@@ -18,15 +18,15 @@ This library has the following requirements:
 
 ## Installation
 
-Install composer in your project:
+Install Composer in your project:
 
-``` bash
+```bash
 $ curl -s https://getcomposer.org/installer | php
 ```
 
 Require the package via Composer:
 
-``` bash
+```bash
 $ php composer.phar require gravitymedia/stream
 ```
 
@@ -34,32 +34,29 @@ $ php composer.phar require gravitymedia/stream
 
 This is a simple usage example for character streams but is applicable for binary data streams.
 
-``` php
+```php
 require 'vendor/autoload.php';
 
 use GravityMedia\Stream\Stream;
 
-// create new stream object
-$stream = new Stream('php://temp', 'r+');
+// create resource
+$resource = fopen('php://temp', 'r+');
 
-// get stream writer object
-$writer = $stream->getWriter();
+// create new stream object
+$stream = Stream::fromResource($resource);
 
 // write some random data
-$writer->write('some random data...');
+$stream->write('some random data...');
 
 // truncate random data
-$writer->truncate(16);
+$stream->truncate(16);
 
 // rewind stream
 $stream->rewind();
 
-// get stream reader object
-$reader = $stream->getReader();
-
 // print "some random data"
 while (!$stream->eof()) {
-    print $reader->read();
+    print $stream->read();
 }
 print PHP_EOL;
 
@@ -71,15 +68,37 @@ print $stream->tell() . PHP_EOL;
 
 // print "random data"
 while (!$stream->eof()) {
-    print $reader->read();
+    print $stream->read();
 }
 print PHP_EOL;
 ```
 
 ## Testing
 
-``` bash
+Clone this repository, install Composer and all dependencies:
+
+```bash
+$ php composer.phar install
+```
+
+Run the test suite:
+
+```bash
 $ php composer.phar test
+```
+
+## Generating documentation
+
+Clone this repository, install Composer and all dependencies:
+
+```bash
+$ php composer.phar install
+```
+
+Generate the documentation to the `build/docs` directory:
+
+```bash
+$ php composer.phar doc
 ```
 
 ## Contributing
