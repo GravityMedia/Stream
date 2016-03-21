@@ -8,7 +8,6 @@
 namespace GravityMedia\Stream;
 
 use GravityMedia\Stream\Exception;
-use GravityMedia\Stream\Reader\StringReader;
 
 /**
  * Stream
@@ -58,11 +57,6 @@ class Stream implements StreamInterface
      * @var string
      */
     protected $uri;
-
-    /**
-     * @var StringReader
-     */
-    protected $stringReader;
 
     /**
      * Create stream object from resource
@@ -161,34 +155,6 @@ class Stream implements StreamInterface
     }
 
     /**
-     * Get string reader
-     *
-     * @return StringReader
-     */
-    public function getStringReader()
-    {
-        if (null === $this->stringReader) {
-            $this->stringReader = new StringReader();
-        }
-
-        return $this->stringReader;
-    }
-
-    /**
-     * Set string reader
-     *
-     * @param StringReader $stringReader
-     *
-     * @return $this
-     */
-    public function setStringReader(StringReader $stringReader)
-    {
-        $this->stringReader = $stringReader;
-
-        return $this;
-    }
-
-    /**
      * Get information about the stream
      *
      * @param string $info The information to retrieve
@@ -282,17 +248,6 @@ class Stream implements StreamInterface
         }
 
         return $data;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function readString($length = 1)
-    {
-        return $this->getStringReader()
-            ->setStream($this)
-            ->setLength($length)
-            ->read();
     }
 
     /**

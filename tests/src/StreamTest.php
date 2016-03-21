@@ -120,32 +120,6 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test that a string reader can be obtained from the stream
-     */
-    public function testGettingStringReader()
-    {
-        $resource = $this->getResource();
-        $stream = Stream::fromResource($resource);
-
-        $this->assertInstanceOf('GravityMedia\Stream\Reader\StringReader', $stream->getStringReader());
-    }
-
-    /**
-     * Test that the string reader equals the one which was previously set
-     */
-    public function testSettingStringReader()
-    {
-        $resource = $this->getResource();
-        $stream = Stream::fromResource($resource);
-        $readerMock = $this->getMock('GravityMedia\Stream\Reader\StringReader');
-
-        /** @var \GravityMedia\Stream\Reader\StringReader $readerMock */
-        $this->assertEquals($stream, $stream->setStringReader($readerMock));
-        $this->assertEquals($readerMock, $stream->getStringReader());
-
-    }
-
-    /**
      * Test that getting the size from a non-local stream throws an exception
      *
      * @expectedException        \GravityMedia\Stream\Exception\BadMethodCallException
@@ -381,17 +355,6 @@ class StreamTest extends \PHPUnit_Framework_TestCase
         $stream = Stream::fromResource($resource);
 
         $this->assertEquals('contents', $stream->read(8));
-    }
-
-    /**
-     * Test that the string data can be read
-     */
-    public function testReadingStringData()
-    {
-        $resource = $this->getResource('contents');
-        $stream = Stream::fromResource($resource);
-
-        $this->assertEquals('contents', $stream->readString(8));
     }
 
     /**

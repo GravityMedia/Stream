@@ -71,22 +71,6 @@ interface StreamInterface
     public function getUri();
 
     /**
-     * Get string reader
-     *
-     * @return StringReader
-     */
-    public function getStringReader();
-
-    /**
-     * Set string reader
-     *
-     * @param StringReader $stringReader
-     *
-     * @return $this
-     */
-    public function setStringReader(StringReader $stringReader);
-
-    /**
      * Get size of the stream in bytes
      *
      * @throws Exception\BadMethodCallException An exception will be thrown for non-local streams
@@ -156,19 +140,6 @@ interface StreamInterface
      * @link   http://www.php.net/manual/en/function.fread.php
      */
     public function read($length);
-
-    /**
-     * Read string data from the stream
-     *
-     * @param int $length The maximum number of bytes to read (default is 1)
-     *
-     * @throws Exception\BadMethodCallException An exception will be thrown for non-readable streams
-     * @throws Exception\IOException            An exception will be thrown for invalid stream resources or when the
-     *                                          data could not be read
-     *
-     * @return string
-     */
-    public function readString($length = 1);
 
     /**
      * Write data to the stream and return the number of bytes written
