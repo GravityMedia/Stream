@@ -7,15 +7,16 @@
 
 namespace GravityMedia\Stream\Reader;
 
+use GravityMedia\Stream\Enum\Endian;
 use GravityMedia\Stream\Exception;
 use GravityMedia\Stream\StreamInterface;
 
 /**
- * String reader
+ * Unsigned short (16-bit integer) reader
  *
  * @package GravityMedia\Stream\Reader
  */
-class StringReader
+class UnsignedShortReader
 {
     /**
      * @var StreamInterface
@@ -25,24 +26,29 @@ class StringReader
     /**
      * @var int
      */
-    protected $length;
+    protected $endian;
 
     /**
-     * Create string reader object
+     * Create unsigned short (16-bit integer) reader object
      *
-     * @throws Exception\InvalidArgumentException An exception will be thrown for non-readable streams
+     * @throws Exception\InvalidArgumentException   An exception will be thrown for non-readable streams or an invalid
+     *                                              endian value
      *
      * @param StreamInterface $stream
-     * @param int $length
+     * @param int $endian
      */
-    public function __construct(StreamInterface $stream, $length)
+    public function __construct(StreamInterface $stream, $endian)
     {
         if (!$stream->isReadable()) {
             throw new Exception\InvalidArgumentException('Stream not readable');
         }
 
+        if (!in_array($endian, [Endian::ENDIAN_BIG, Endian::ENDIAN_LITTLE])) {
+            throw new Exception\InvalidArgumentException('Invalid endian');
+        }
+
         $this->stream = $stream;
-        $this->length = $length;
+        $this->endian = $endian;
     }
 
     /**
@@ -56,13 +62,13 @@ class StringReader
     }
 
     /**
-     * Get length
+     * Get endian
      *
      * @return int
      */
-    public function getLength()
+    public function getEndian()
     {
-        return $this->length;
+        return $this->endian;
     }
 
     /**
@@ -71,10 +77,17 @@ class StringReader
      * @throws Exception\IOException    An exception will be thrown for invalid stream resources or when the data could
      *                                  not be read
      *
-     * @return string
+     * @return int
      */
     public function read()
     {
-        return $this->stream->read($this->length);
+        $format = 'n';
+        if (Endian::ENDIAN_LITTLE === $this->endian) {
+            $format = 'v';
+        }
+
+        $data = unpack($format, $this->stream->read(2));
+
+        return $data[1];
     }
 }

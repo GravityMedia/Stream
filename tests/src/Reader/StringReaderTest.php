@@ -19,25 +19,12 @@ use GravityMedia\Stream\Reader\StringReader;
 class StringReaderTest extends \PHPUnit_Framework_TestCase
 {
     /**
-     * Test that getting a stream from the reader with no stream throws an exception
-     *
-     * @expectedException        \GravityMedia\Stream\Exception\BadMethodCallException
-     * @expectedExceptionMessage Stream not set
-     */
-    public function testGettingStreamThrowsExceptionOnMissingStream()
-    {
-        $reader = new StringReader();
-
-        $reader->getStream();
-    }
-
-    /**
      * Test that setting a non-readable stream throws an exception
      *
-     * @expectedException        \GravityMedia\Stream\Exception\BadMethodCallException
+     * @expectedException        \GravityMedia\Stream\Exception\InvalidArgumentException
      * @expectedExceptionMessage Stream not readable
      */
-    public function testSettingStreamThrowsExceptionOnNonReadableStream()
+    public function testCreatingReaderThrowsExceptionOnNonReadableStream()
     {
         $streamMock = $this->getMockBuilder('GravityMedia\Stream\Stream')
             ->setMethods(['isReadable'])
@@ -47,16 +34,14 @@ class StringReaderTest extends \PHPUnit_Framework_TestCase
             ->method('isReadable')
             ->will($this->returnValue(false));
 
-        $reader = new StringReader();
-
         /** @var \GravityMedia\Stream\StreamInterface $streamMock */
-        $reader->setStream($streamMock);
+        new StringReader($streamMock, 1);
     }
 
     /**
      * Test that the stream equals the one which was previously set
      */
-    public function testSettingStream()
+    public function testCreatingReader()
     {
         $streamMock = $this->getMockBuilder('GravityMedia\Stream\Stream')
             ->setMethods(['isReadable'])
@@ -66,35 +51,13 @@ class StringReaderTest extends \PHPUnit_Framework_TestCase
             ->method('isReadable')
             ->will($this->returnValue(true));
 
-        $reader = new StringReader();
+        $length = 1;
 
         /** @var \GravityMedia\Stream\StreamInterface $streamMock */
-        $this->assertEquals($reader, $reader->setStream($streamMock));
+        $reader = new StringReader($streamMock, $length);
+
         $this->assertEquals($streamMock, $reader->getStream());
-    }
-
-    /**
-     * Test that getting the length from the reader with no length throws an exception
-     *
-     * @expectedException        \GravityMedia\Stream\Exception\BadMethodCallException
-     * @expectedExceptionMessage Length not set
-     */
-    public function testGettingLengthThrowsExceptionOnMissingLength()
-    {
-        $reader = new StringReader();
-
-        $reader->getLength();
-    }
-
-    /**
-     * Test that the length equals the one which was previously set
-     */
-    public function testSettingLength()
-    {
-        $reader = new StringReader();
-
-        $this->assertEquals($reader, $reader->setLength(8));
-        $this->assertEquals(8, $reader->getLength());
+        $this->assertEquals($length, $reader->getLength());
     }
 
     /**
@@ -115,11 +78,8 @@ class StringReaderTest extends \PHPUnit_Framework_TestCase
             ->with(8)
             ->will($this->returnValue('contents'));
 
-        $reader = new StringReader();
-
         /** @var \GravityMedia\Stream\StreamInterface $streamMock */
-        $reader->setStream($streamMock);
-        $reader->setLength(8);
+        $reader = new StringReader($streamMock, 8);
 
         $this->assertEquals('contents', $reader->read());
     }
