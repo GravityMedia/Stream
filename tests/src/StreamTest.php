@@ -15,8 +15,6 @@ use GravityMedia\Stream\Stream;
  * @package GravityMedia\StreamTest
  *
  * @covers  GravityMedia\Stream\Stream
- *
- * @uses    GravityMedia\Stream\Reader\StringReader
  */
 class StreamTest extends \PHPUnit_Framework_TestCase
 {

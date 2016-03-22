@@ -8,21 +8,26 @@
 namespace GravityMedia\Stream\Enum;
 
 /**
- * Endian enum
+ * Byte order enum
  *
  * @package GravityMedia\Stream\Enum
  */
-class Endian
+class ByteOrder
 {
+    /**
+     * Machine endian
+     */
+    const MACHINE_ENDIAN = 0;
+
     /**
      * Big endian
      */
-    const ENDIAN_BIG = 1;
+    const BIG_ENDIAN = 1;
 
     /**
      * Little endian
      */
-    const ENDIAN_LITTLE = 2;
+    const LITTLE_ENDIAN = 2;
 
     /**
      * Valid values
@@ -30,8 +35,9 @@ class Endian
      * @var int[]
      */
     protected static $values = [
-        self::ENDIAN_BIG,
-        self::ENDIAN_LITTLE
+        self::MACHINE_ENDIAN,
+        self::BIG_ENDIAN,
+        self::LITTLE_ENDIAN
     ];
 
     /**

@@ -11,11 +11,11 @@ use GravityMedia\Stream\Exception;
 use GravityMedia\Stream\StreamInterface;
 
 /**
- * Unsigned char (8-bit integer) reader
+ * Abstract reader
  *
  * @package GravityMedia\Stream\Reader
  */
-class UnsignedCharReader
+abstract class AbstractReader
 {
     /**
      * @var StreamInterface
@@ -23,7 +23,7 @@ class UnsignedCharReader
     protected $stream;
 
     /**
-     * Create unsigned char (8-bit integer) reader object
+     * Create reader object
      *
      * @throws Exception\InvalidArgumentException An exception will be thrown for non-readable streams
      *
@@ -49,17 +49,9 @@ class UnsignedCharReader
     }
 
     /**
-     * Read string data from the stream
+     * Read data from the stream
      *
-     * @throws Exception\IOException    An exception will be thrown for invalid stream resources or when the data could
-     *                                  not be read
-     *
-     * @return int
+     * @return mixed
      */
-    public function read()
-    {
-        $data = unpack('C', $this->stream->read(1));
-
-        return $data[1];
-    }
+    abstract public function read();
 }
