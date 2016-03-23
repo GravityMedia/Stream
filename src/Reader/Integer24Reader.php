@@ -11,11 +11,11 @@ use GravityMedia\Stream\Enum\ByteOrder;
 use GravityMedia\Stream\Exception;
 
 /**
- * Short (16-bit integer) reader
+ * 24-bit integer (short) reader
  *
  * @package GravityMedia\Stream\Reader
  */
-class ShortReader extends AbstractIntegerReader
+class Integer24Reader extends AbstractIntegerReader
 {
     /**
      * Use byte order aware trait
@@ -23,35 +23,40 @@ class ShortReader extends AbstractIntegerReader
     use ByteOrderAwareTrait;
 
     /**
-     * Read unsigned short (16-bit integer) data from the stream
+     * Read unsigned 24-bit integer (short) data from the stream
      *
      * @return int
      */
     protected function readUnsigned()
     {
+        $data = $this->getStream()->read(3);
+
         switch ($this->getByteOrder()) {
             case ByteOrder::BIG_ENDIAN:
-                $format = 'n*';
+                $format = 'N*';
+                $data = $data . "\x00";
                 break;
             case ByteOrder::LITTLE_ENDIAN:
-                $format = 'v*';
+                $format = 'V*';
+                $data = "\x00" . $data;
                 break;
             default:
-                $format = 'S*';
+                $format = 'L*';
+                $data = $data . "\x00";
         }
 
-        list(, $value) = unpack($format, $this->getStream()->read(2));
+        list(, $value) = unpack($format, $data);
         return $value;
     }
 
     /**
-     * Read signed short (16-bit integer) data from the stream
+     * Read signed 24-bit integer (short) data from the stream
      *
      * @return int
      */
     protected function readSigned()
     {
-        $data = $this->getStream()->read(2);
+        $data = $this->getStream()->read(3);
 
         if (ByteOrder::MACHINE_ENDIAN !== $this->getByteOrder()
             && $this->getMachineByteOrder() !== $this->getByteOrder()
@@ -59,7 +64,19 @@ class ShortReader extends AbstractIntegerReader
             $data = strrev($data);
         }
 
-        list(, $value) = unpack('s*', $data);
+        switch ($this->getByteOrder()) {
+            case ByteOrder::BIG_ENDIAN:
+                $data = $data . "\x00";
+                break;
+            case ByteOrder::LITTLE_ENDIAN:
+                $data = "\x00" . $data;
+                break;
+            default:
+                $data = $data . "\x00";
+        }
+
+
+        list(, $value) = unpack('l*', $data);
         return $value;
     }
 }

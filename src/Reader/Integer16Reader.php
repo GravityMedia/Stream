@@ -11,11 +11,11 @@ use GravityMedia\Stream\Enum\ByteOrder;
 use GravityMedia\Stream\Exception;
 
 /**
- * Long (32-bit integer) reader
+ * 16-bit integer (short) reader
  *
  * @package GravityMedia\Stream\Reader
  */
-class LongReader extends AbstractIntegerReader
+class Integer16Reader extends AbstractIntegerReader
 {
     /**
      * Use byte order aware trait
@@ -23,7 +23,7 @@ class LongReader extends AbstractIntegerReader
     use ByteOrderAwareTrait;
 
     /**
-     * Read unsigned long (32-bit integer) data from the stream
+     * Read unsigned 16-bit integer (short) data from the stream
      *
      * @return int
      */
@@ -31,27 +31,27 @@ class LongReader extends AbstractIntegerReader
     {
         switch ($this->getByteOrder()) {
             case ByteOrder::BIG_ENDIAN:
-                $format = 'N*';
+                $format = 'n*';
                 break;
             case ByteOrder::LITTLE_ENDIAN:
-                $format = 'V*';
+                $format = 'v*';
                 break;
             default:
-                $format = 'L*';
+                $format = 'S*';
         }
 
-        list(, $value) = unpack($format, $this->getStream()->read(4));
+        list(, $value) = unpack($format, $this->getStream()->read(2));
         return $value;
     }
 
     /**
-     * Read signed long (32-bit integer) data from the stream
+     * Read signed 16-bit integer (short) data from the stream
      *
      * @return int
      */
     protected function readSigned()
     {
-        $data = $this->stream->read(4);
+        $data = $this->getStream()->read(2);
 
         if (ByteOrder::MACHINE_ENDIAN !== $this->getByteOrder()
             && $this->getMachineByteOrder() !== $this->getByteOrder()
@@ -59,7 +59,7 @@ class LongReader extends AbstractIntegerReader
             $data = strrev($data);
         }
 
-        list(, $value) = unpack('l*', $data);
+        list(, $value) = unpack('s*', $data);
         return $value;
     }
 }

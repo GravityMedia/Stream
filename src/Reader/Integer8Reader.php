@@ -10,14 +10,14 @@ namespace GravityMedia\Stream\Reader;
 use GravityMedia\Stream\Exception;
 
 /**
- * Char (8-bit integer) reader
+ * 8-bit integer (char) reader
  *
  * @package GravityMedia\Stream\Reader
  */
-class CharReader extends AbstractIntegerReader
+class Integer8Reader extends AbstractIntegerReader
 {
     /**
-     * Read unsigned char (8-bit integer) data from the stream
+     * Read unsigned 8-bit integer (char) data from the stream
      *
      * @return int
      */
@@ -27,7 +27,7 @@ class CharReader extends AbstractIntegerReader
     }
 
     /**
-     * Read signed char (8-bit integer) data from the stream
+     * Read signed 8-bit integer (char) data from the stream
      *
      * @return int
      */
