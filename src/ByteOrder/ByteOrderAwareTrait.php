@@ -5,15 +5,14 @@
  * @author Daniel Schröder <daniel.schroeder@gravitymedia.de>
  */
 
-namespace GravityMedia\Stream\Reader;
+namespace GravityMedia\Stream\ByteOrder;
 
-use GravityMedia\Stream\Enum\ByteOrder;
 use GravityMedia\Stream\Exception;
 
 /**
- * Short (16-bit integer) reader
+ * Byte order aware trait
  *
- * @package GravityMedia\Stream\Reader
+ * @package GravityMedia\Stream\ByteOrder
  */
 trait ByteOrderAwareTrait
 {

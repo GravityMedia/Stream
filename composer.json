@@ -16,12 +16,12 @@
         }
     ],
     "require": {
-        "php": ">=5.4"
+        "php": ">=5.6"
     },
     "require-dev": {
-        "phing/phing": "^2.13",
-        "phpunit/phpunit": "^4.8",
-        "sami/sami": "^3.1",
+        "phing/phing": "^2.14",
+        "phpunit/phpunit": "^5.3",
+        "sami/sami": "^3.2",
         "scrutinizer/ocular": "^1.3",
         "symfony/finder": "^2.8"
     },

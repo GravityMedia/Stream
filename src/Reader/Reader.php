@@ -11,11 +11,11 @@ use GravityMedia\Stream\Exception;
 use GravityMedia\Stream\StreamInterface;
 
 /**
- * Abstract reader
+ * Stream reader
  *
  * @package GravityMedia\Stream\Reader
  */
-abstract class AbstractReader
+class Reader
 {
     /**
      * @var StreamInterface
@@ -49,9 +49,14 @@ abstract class AbstractReader
     }
 
     /**
-     * Read data from the stream
+     * Read up to $length number of bytes of data from the stream
      *
-     * @return mixed
+     * @param int $length The maximum number of bytes to read
+     *
+     * @return string
      */
-    abstract public function read();
+    public function read($length)
+    {
+        return $this->getStream()->read($length);
+    }
 }
