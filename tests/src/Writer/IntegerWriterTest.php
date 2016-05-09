@@ -5,19 +5,19 @@
  * @author Daniel Schröder <daniel.schroeder@gravitymedia.de>
  */
 
-namespace GravityMedia\StreamTest\Reader;
+namespace GravityMedia\StreamTest\Writer;
 
 use GravityMedia\Stream\ByteOrder\ByteOrder;
 
 /**
- * Integer reader test
+ * Integer writer test
  *
- * @package GravityMedia\StreamTest\Reader
+ * @package GravityMedia\StreamTest\Writer
  *
- * @covers  GravityMedia\Stream\Reader\IntegerReader
+ * @covers  GravityMedia\Stream\Writer\IntegerWriter
  * @uses    GravityMedia\Stream\ByteOrder\ByteOrderAwareTrait
  */
-class IntegerReaderTest extends \PHPUnit_Framework_TestCase
+class IntegerWriterTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @var int
@@ -44,27 +44,27 @@ class IntegerReaderTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test reading unsigned 8-bit character
+     * Test writing unsigned 8-bit character
      *
      * @dataProvider provideUnsignedInteger8Values()
      *
      * @param string $data
      * @param int    $value
      */
-    public function testReadUnsignedInteger8($data, $value)
+    public function testWriteUnsignedInteger8($data, $value)
     {
-        $readerMock = $this->getMockBuilder('GravityMedia\Stream\Reader\IntegerReader')
+        $writerMock = $this->getMockBuilder('GravityMedia\Stream\Writer\IntegerWriter')
             ->disableOriginalConstructor()
-            ->setMethods(['read'])
+            ->setMethods(['write'])
             ->getMock();
 
-        $readerMock->expects($this->once())
-            ->method('read')
-            ->with(1)
-            ->will($this->returnValue($data));
+        $writerMock->expects($this->once())
+            ->method('write')
+            ->with($data)
+            ->will($this->returnValue(1));
 
-        /** @var \GravityMedia\Stream\Reader\IntegerReader $readerMock */
-        $this->assertSame($value, $readerMock->readUnsignedInteger8());
+        /** @var \GravityMedia\Stream\Writer\IntegerWriter $writerMock */
+        $this->assertSame(1, $writerMock->writeUnsignedInteger8($value));
     }
 
     /**
@@ -83,27 +83,27 @@ class IntegerReaderTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test reading signed 8-bit character
+     * Test writing signed 8-bit character
      *
      * @dataProvider provideSignedInteger8Values()
      *
      * @param string $data
      * @param int    $value
      */
-    public function testReadSignedInteger8($data, $value)
+    public function testWriteSignedInteger8($data, $value)
     {
-        $readerMock = $this->getMockBuilder('GravityMedia\Stream\Reader\IntegerReader')
+        $writerMock = $this->getMockBuilder('GravityMedia\Stream\Writer\IntegerWriter')
             ->disableOriginalConstructor()
-            ->setMethods(['read'])
+            ->setMethods(['write'])
             ->getMock();
 
-        $readerMock->expects($this->once())
-            ->method('read')
-            ->with(1)
-            ->will($this->returnValue($data));
+        $writerMock->expects($this->once())
+            ->method('write')
+            ->with($data)
+            ->will($this->returnValue(1));
 
-        /** @var \GravityMedia\Stream\Reader\IntegerReader $readerMock */
-        $this->assertSame($value, $readerMock->readSignedInteger8());
+        /** @var \GravityMedia\Stream\Writer\IntegerWriter $writerMock */
+        $this->assertSame(1, $writerMock->writeSignedInteger8($value));
     }
 
     /**
@@ -120,32 +120,33 @@ class IntegerReaderTest extends \PHPUnit_Framework_TestCase
         ];
     }
 
+
     /**
-     * Test reading unsigned 16-bit integer with big endian byte order
+     * Test writing unsigned 16-bit integer with big endian byte order
      *
      * @dataProvider provideUnsignedInteger16BigEndianValues()
      *
      * @param string $data
      * @param int    $value
      */
-    public function testReadUnsignedInteger16BigEndian($data, $value)
+    public function testWriteUnsignedInteger16BigEndian($data, $value)
     {
-        $readerMock = $this->getMockBuilder('GravityMedia\Stream\Reader\IntegerReader')
+        $writerMock = $this->getMockBuilder('GravityMedia\Stream\Writer\IntegerWriter')
             ->disableOriginalConstructor()
-            ->setMethods(['getByteOrder', 'read'])
+            ->setMethods(['getByteOrder', 'write'])
             ->getMock();
 
-        $readerMock->expects($this->atLeast(1))
+        $writerMock->expects($this->atLeast(1))
             ->method('getByteOrder')
             ->will($this->returnValue(ByteOrder::BIG_ENDIAN));
 
-        $readerMock->expects($this->once())
-            ->method('read')
-            ->with(2)
-            ->will($this->returnValue($data));
+        $writerMock->expects($this->once())
+            ->method('write')
+            ->with($data)
+            ->will($this->returnValue(2));
 
-        /** @var \GravityMedia\Stream\Reader\IntegerReader $readerMock */
-        $this->assertSame($value, $readerMock->readUnsignedInteger16());
+        /** @var \GravityMedia\Stream\Writer\IntegerWriter $writerMock */
+        $this->assertSame(2, $writerMock->writeUnsignedInteger16($value));
     }
 
     /**
@@ -165,31 +166,31 @@ class IntegerReaderTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test reading unsigned 16-bit integer with little endian byte order
+     * Test writing unsigned 16-bit integer with little endian byte order
      *
      * @dataProvider provideUnsignedInteger16LittleEndianValues()
      *
      * @param string $data
      * @param int    $value
      */
-    public function testReadUnsignedInteger16LittleEndian($data, $value)
+    public function testWriteUnsignedInteger16LittleEndian($data, $value)
     {
-        $readerMock = $this->getMockBuilder('GravityMedia\Stream\Reader\IntegerReader')
+        $writerMock = $this->getMockBuilder('GravityMedia\Stream\Writer\IntegerWriter')
             ->disableOriginalConstructor()
-            ->setMethods(['getByteOrder', 'read'])
+            ->setMethods(['getByteOrder', 'write'])
             ->getMock();
 
-        $readerMock->expects($this->atLeast(1))
+        $writerMock->expects($this->atLeast(1))
             ->method('getByteOrder')
             ->will($this->returnValue(ByteOrder::LITTLE_ENDIAN));
 
-        $readerMock->expects($this->once())
-            ->method('read')
-            ->with(2)
-            ->will($this->returnValue($data));
+        $writerMock->expects($this->once())
+            ->method('write')
+            ->with($data)
+            ->will($this->returnValue(2));
 
-        /** @var \GravityMedia\Stream\Reader\IntegerReader $readerMock */
-        $this->assertSame($value, $readerMock->readUnsignedInteger16());
+        /** @var \GravityMedia\Stream\Writer\IntegerWriter $writerMock */
+        $this->assertSame(2, $writerMock->writeUnsignedInteger16($value));
     }
 
     /**
@@ -209,31 +210,31 @@ class IntegerReaderTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test reading unsigned 16-bit integer
+     * Test writing unsigned 16-bit integer
      *
      * @dataProvider provideUnsignedInteger16Values()
      *
      * @param string $data
      * @param int    $value
      */
-    public function testReadUnsignedInteger16($data, $value)
+    public function testWriteUnsignedInteger16($data, $value)
     {
-        $readerMock = $this->getMockBuilder('GravityMedia\Stream\Reader\IntegerReader')
+        $writerMock = $this->getMockBuilder('GravityMedia\Stream\Writer\IntegerWriter')
             ->disableOriginalConstructor()
-            ->setMethods(['getByteOrder', 'read'])
+            ->setMethods(['getByteOrder', 'write'])
             ->getMock();
 
-        $readerMock->expects($this->atLeast(1))
+        $writerMock->expects($this->atLeast(1))
             ->method('getByteOrder')
             ->will($this->returnValue(ByteOrder::MACHINE_ENDIAN));
 
-        $readerMock->expects($this->once())
-            ->method('read')
-            ->with(2)
-            ->will($this->returnValue($data));
+        $writerMock->expects($this->once())
+            ->method('write')
+            ->with($data)
+            ->will($this->returnValue(2));
 
-        /** @var \GravityMedia\Stream\Reader\IntegerReader $readerMock */
-        $this->assertSame($value, $readerMock->readUnsignedInteger16());
+        /** @var \GravityMedia\Stream\Writer\IntegerWriter $writerMock */
+        $this->assertSame(2, $writerMock->writeUnsignedInteger16($value));
     }
 
     /**
@@ -263,31 +264,31 @@ class IntegerReaderTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test reading signed 16-bit integer with big endian byte order
+     * Test writing signed 16-bit integer with big endian byte order
      *
      * @dataProvider provideSignedInteger16BigEndianValues()
      *
      * @param string $data
      * @param int    $value
      */
-    public function testReadSignedInteger16BigEndian($data, $value)
+    public function testWriteSignedInteger16BigEndian($data, $value)
     {
-        $readerMock = $this->getMockBuilder('GravityMedia\Stream\Reader\IntegerReader')
+        $writerMock = $this->getMockBuilder('GravityMedia\Stream\Writer\IntegerWriter')
             ->disableOriginalConstructor()
-            ->setMethods(['getByteOrder', 'read'])
+            ->setMethods(['getByteOrder', 'write'])
             ->getMock();
 
-        $readerMock->expects($this->atLeast(1))
+        $writerMock->expects($this->atLeast(1))
             ->method('getByteOrder')
             ->will($this->returnValue(ByteOrder::BIG_ENDIAN));
 
-        $readerMock->expects($this->once())
-            ->method('read')
-            ->with(2)
-            ->will($this->returnValue($data));
+        $writerMock->expects($this->once())
+            ->method('write')
+            ->with($data)
+            ->will($this->returnValue(2));
 
-        /** @var \GravityMedia\Stream\Reader\IntegerReader $readerMock */
-        $this->assertSame($value, $readerMock->readSignedInteger16());
+        /** @var \GravityMedia\Stream\Writer\IntegerWriter $writerMock */
+        $this->assertSame(2, $writerMock->writeSignedInteger16($value));
     }
 
     /**
@@ -305,31 +306,31 @@ class IntegerReaderTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test reading signed 16-bit integer with little endian byte order
+     * Test writing signed 16-bit integer with little endian byte order
      *
      * @dataProvider provideSignedInteger16LittleEndianValues()
      *
      * @param string $data
      * @param int    $value
      */
-    public function testReadSignedInteger16LittleEndian($data, $value)
+    public function testWriteSignedInteger16LittleEndian($data, $value)
     {
-        $readerMock = $this->getMockBuilder('GravityMedia\Stream\Reader\IntegerReader')
+        $writerMock = $this->getMockBuilder('GravityMedia\Stream\Writer\IntegerWriter')
             ->disableOriginalConstructor()
-            ->setMethods(['getByteOrder', 'read'])
+            ->setMethods(['getByteOrder', 'write'])
             ->getMock();
 
-        $readerMock->expects($this->atLeast(1))
+        $writerMock->expects($this->atLeast(1))
             ->method('getByteOrder')
             ->will($this->returnValue(ByteOrder::LITTLE_ENDIAN));
 
-        $readerMock->expects($this->once())
-            ->method('read')
-            ->with(2)
-            ->will($this->returnValue($data));
+        $writerMock->expects($this->once())
+            ->method('write')
+            ->with($data)
+            ->will($this->returnValue(2));
 
-        /** @var \GravityMedia\Stream\Reader\IntegerReader $readerMock */
-        $this->assertSame($value, $readerMock->readSignedInteger16());
+        /** @var \GravityMedia\Stream\Writer\IntegerWriter $writerMock */
+        $this->assertSame(2, $writerMock->writeSignedInteger16($value));
     }
 
     /**
@@ -347,31 +348,31 @@ class IntegerReaderTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test reading signed 16-bit integer
+     * Test writing signed 16-bit integer
      *
      * @dataProvider provideSignedInteger16Values()
      *
      * @param string $data
      * @param int    $value
      */
-    public function testReadSignedInteger16($data, $value)
+    public function testWriteSignedInteger16($data, $value)
     {
-        $readerMock = $this->getMockBuilder('GravityMedia\Stream\Reader\IntegerReader')
+        $writerMock = $this->getMockBuilder('GravityMedia\Stream\Writer\IntegerWriter')
             ->disableOriginalConstructor()
-            ->setMethods(['getByteOrder', 'read'])
+            ->setMethods(['getByteOrder', 'write'])
             ->getMock();
 
-        $readerMock->expects($this->atLeast(1))
+        $writerMock->expects($this->atLeast(1))
             ->method('getByteOrder')
             ->will($this->returnValue(ByteOrder::MACHINE_ENDIAN));
 
-        $readerMock->expects($this->once())
-            ->method('read')
-            ->with(2)
-            ->will($this->returnValue($data));
+        $writerMock->expects($this->once())
+            ->method('write')
+            ->with($data)
+            ->will($this->returnValue(2));
 
-        /** @var \GravityMedia\Stream\Reader\IntegerReader $readerMock */
-        $this->assertSame($value, $readerMock->readSignedInteger16());
+        /** @var \GravityMedia\Stream\Writer\IntegerWriter $writerMock */
+        $this->assertSame(2, $writerMock->writeSignedInteger16($value));
     }
 
     /**
@@ -397,31 +398,31 @@ class IntegerReaderTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test reading unsigned 24-bit integer with big endian byte order
+     * Test writing unsigned 24-bit integer with big endian byte order
      *
      * @dataProvider provideUnsignedInteger24BigEndianValues()
      *
      * @param string $data
      * @param int    $value
      */
-    public function testReadUnsignedInteger24BigEndian($data, $value)
+    public function testWriteUnsignedInteger24BigEndian($data, $value)
     {
-        $readerMock = $this->getMockBuilder('GravityMedia\Stream\Reader\IntegerReader')
+        $writerMock = $this->getMockBuilder('GravityMedia\Stream\Writer\IntegerWriter')
             ->disableOriginalConstructor()
-            ->setMethods(['getByteOrder', 'read'])
+            ->setMethods(['getByteOrder', 'write'])
             ->getMock();
 
-        $readerMock->expects($this->atLeast(1))
+        $writerMock->expects($this->atLeast(1))
             ->method('getByteOrder')
             ->will($this->returnValue(ByteOrder::BIG_ENDIAN));
 
-        $readerMock->expects($this->once())
-            ->method('read')
-            ->with(3)
-            ->will($this->returnValue($data));
+        $writerMock->expects($this->once())
+            ->method('write')
+            ->with($data)
+            ->will($this->returnValue(3));
 
-        /** @var \GravityMedia\Stream\Reader\IntegerReader $readerMock */
-        $this->assertSame($value, $readerMock->readUnsignedInteger24());
+        /** @var \GravityMedia\Stream\Writer\IntegerWriter $writerMock */
+        $this->assertSame(3, $writerMock->writeUnsignedInteger24($value));
     }
 
     /**
@@ -440,31 +441,31 @@ class IntegerReaderTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test reading unsigned 24-bit integer with little endian byte order
+     * Test writing unsigned 24-bit integer with little endian byte order
      *
      * @dataProvider provideUnsignedInteger24LittleEndianValues()
      *
      * @param string $data
      * @param int    $value
      */
-    public function testReadUnsignedInteger24LittleEndian($data, $value)
+    public function testWriteUnsignedInteger24LittleEndian($data, $value)
     {
-        $readerMock = $this->getMockBuilder('GravityMedia\Stream\Reader\IntegerReader')
+        $writerMock = $this->getMockBuilder('GravityMedia\Stream\Writer\IntegerWriter')
             ->disableOriginalConstructor()
-            ->setMethods(['getByteOrder', 'read'])
+            ->setMethods(['getByteOrder', 'write'])
             ->getMock();
 
-        $readerMock->expects($this->atLeast(1))
+        $writerMock->expects($this->atLeast(1))
             ->method('getByteOrder')
             ->will($this->returnValue(ByteOrder::LITTLE_ENDIAN));
 
-        $readerMock->expects($this->once())
-            ->method('read')
-            ->with(3)
-            ->will($this->returnValue($data));
+        $writerMock->expects($this->once())
+            ->method('write')
+            ->with($data)
+            ->will($this->returnValue(3));
 
-        /** @var \GravityMedia\Stream\Reader\IntegerReader $readerMock */
-        $this->assertSame($value, $readerMock->readUnsignedInteger24());
+        /** @var \GravityMedia\Stream\Writer\IntegerWriter $writerMock */
+        $this->assertSame(3, $writerMock->writeUnsignedInteger24($value));
     }
 
     /**
@@ -483,31 +484,31 @@ class IntegerReaderTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test reading unsigned 24-bit integer
+     * Test writing unsigned 24-bit integer
      *
      * @dataProvider provideUnsignedInteger24Values()
      *
      * @param string $data
      * @param int    $value
      */
-    public function testReadUnsignedInteger24($data, $value)
+    public function testWriteUnsignedInteger24($data, $value)
     {
-        $readerMock = $this->getMockBuilder('GravityMedia\Stream\Reader\IntegerReader')
+        $writerMock = $this->getMockBuilder('GravityMedia\Stream\Writer\IntegerWriter')
             ->disableOriginalConstructor()
-            ->setMethods(['getByteOrder', 'read'])
+            ->setMethods(['getByteOrder', 'write'])
             ->getMock();
 
-        $readerMock->expects($this->atLeast(1))
+        $writerMock->expects($this->atLeast(1))
             ->method('getByteOrder')
             ->will($this->returnValue(ByteOrder::MACHINE_ENDIAN));
 
-        $readerMock->expects($this->once())
-            ->method('read')
-            ->with(3)
-            ->will($this->returnValue($data));
+        $writerMock->expects($this->once())
+            ->method('write')
+            ->with($data)
+            ->will($this->returnValue(3));
 
-        /** @var \GravityMedia\Stream\Reader\IntegerReader $readerMock */
-        $this->assertSame($value, $readerMock->readUnsignedInteger24());
+        /** @var \GravityMedia\Stream\Writer\IntegerWriter $writerMock */
+        $this->assertSame(3, $writerMock->writeUnsignedInteger24($value));
     }
 
     /**
@@ -535,31 +536,31 @@ class IntegerReaderTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test reading signed 24-bit integer with big endian byte order
+     * Test writing signed 24-bit integer with big endian byte order
      *
      * @dataProvider provideSignedInteger24BigEndianValues()
      *
      * @param string $data
      * @param int    $value
      */
-    public function testReadSignedInteger24BigEndian($data, $value)
+    public function testWriteSignedInteger24BigEndian($data, $value)
     {
-        $readerMock = $this->getMockBuilder('GravityMedia\Stream\Reader\IntegerReader')
+        $writerMock = $this->getMockBuilder('GravityMedia\Stream\Writer\IntegerWriter')
             ->disableOriginalConstructor()
-            ->setMethods(['getByteOrder', 'read'])
+            ->setMethods(['getByteOrder', 'write'])
             ->getMock();
 
-        $readerMock->expects($this->atLeast(1))
+        $writerMock->expects($this->atLeast(1))
             ->method('getByteOrder')
             ->will($this->returnValue(ByteOrder::BIG_ENDIAN));
 
-        $readerMock->expects($this->once())
-            ->method('read')
-            ->with(3)
-            ->will($this->returnValue($data));
+        $writerMock->expects($this->once())
+            ->method('write')
+            ->with($data)
+            ->will($this->returnValue(3));
 
-        /** @var \GravityMedia\Stream\Reader\IntegerReader $readerMock */
-        $this->assertSame($value, $readerMock->readSignedInteger24());
+        /** @var \GravityMedia\Stream\Writer\IntegerWriter $writerMock */
+        $this->assertSame(3, $writerMock->writeSignedInteger24($value));
     }
 
     /**
@@ -577,31 +578,31 @@ class IntegerReaderTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test reading signed 24-bit integer with little endian byte order
+     * Test writing signed 24-bit integer with little endian byte order
      *
      * @dataProvider provideSignedInteger24LittleEndianValues()
      *
      * @param string $data
      * @param int    $value
      */
-    public function testReadSignedInteger24LittleEndian($data, $value)
+    public function testWriteSignedInteger24LittleEndian($data, $value)
     {
-        $readerMock = $this->getMockBuilder('GravityMedia\Stream\Reader\IntegerReader')
+        $writerMock = $this->getMockBuilder('GravityMedia\Stream\Writer\IntegerWriter')
             ->disableOriginalConstructor()
-            ->setMethods(['getByteOrder', 'read'])
+            ->setMethods(['getByteOrder', 'write'])
             ->getMock();
 
-        $readerMock->expects($this->atLeast(1))
+        $writerMock->expects($this->atLeast(1))
             ->method('getByteOrder')
             ->will($this->returnValue(ByteOrder::LITTLE_ENDIAN));
 
-        $readerMock->expects($this->once())
-            ->method('read')
-            ->with(3)
-            ->will($this->returnValue($data));
+        $writerMock->expects($this->once())
+            ->method('write')
+            ->with($data)
+            ->will($this->returnValue(3));
 
-        /** @var \GravityMedia\Stream\Reader\IntegerReader $readerMock */
-        $this->assertSame($value, $readerMock->readSignedInteger24());
+        /** @var \GravityMedia\Stream\Writer\IntegerWriter $writerMock */
+        $this->assertSame(3, $writerMock->writeSignedInteger24($value));
     }
 
     /**
@@ -619,31 +620,31 @@ class IntegerReaderTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test reading signed 24-bit integer
+     * Test writing signed 24-bit integer
      *
      * @dataProvider provideSignedInteger24Values()
      *
      * @param string $data
      * @param int    $value
      */
-    public function testReadSignedInteger24($data, $value)
+    public function testWriteSignedInteger24($data, $value)
     {
-        $readerMock = $this->getMockBuilder('GravityMedia\Stream\Reader\IntegerReader')
+        $writerMock = $this->getMockBuilder('GravityMedia\Stream\Writer\IntegerWriter')
             ->disableOriginalConstructor()
-            ->setMethods(['getByteOrder', 'read'])
+            ->setMethods(['getByteOrder', 'write'])
             ->getMock();
 
-        $readerMock->expects($this->atLeast(1))
+        $writerMock->expects($this->atLeast(1))
             ->method('getByteOrder')
             ->will($this->returnValue(ByteOrder::MACHINE_ENDIAN));
 
-        $readerMock->expects($this->once())
-            ->method('read')
-            ->with(3)
-            ->will($this->returnValue($data));
+        $writerMock->expects($this->once())
+            ->method('write')
+            ->with($data)
+            ->will($this->returnValue(3));
 
-        /** @var \GravityMedia\Stream\Reader\IntegerReader $readerMock */
-        $this->assertSame($value, $readerMock->readSignedInteger24());
+        /** @var \GravityMedia\Stream\Writer\IntegerWriter $writerMock */
+        $this->assertSame(3, $writerMock->writeSignedInteger24($value));
     }
 
     /**
@@ -669,31 +670,31 @@ class IntegerReaderTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test reading unsigned 32-bit integer with big endian byte order
+     * Test writing unsigned 32-bit integer with big endian byte order
      *
      * @dataProvider provideUnsignedInteger32BigEndianValues()
      *
      * @param string $data
      * @param int    $value
      */
-    public function testReadUnsignedInteger32BigEndian($data, $value)
+    public function testWriteUnsignedInteger32BigEndian($data, $value)
     {
-        $readerMock = $this->getMockBuilder('GravityMedia\Stream\Reader\IntegerReader')
+        $writerMock = $this->getMockBuilder('GravityMedia\Stream\Writer\IntegerWriter')
             ->disableOriginalConstructor()
-            ->setMethods(['getByteOrder', 'read'])
+            ->setMethods(['getByteOrder', 'write'])
             ->getMock();
 
-        $readerMock->expects($this->atLeast(1))
+        $writerMock->expects($this->atLeast(1))
             ->method('getByteOrder')
             ->will($this->returnValue(ByteOrder::BIG_ENDIAN));
 
-        $readerMock->expects($this->once())
-            ->method('read')
-            ->with(4)
-            ->will($this->returnValue($data));
+        $writerMock->expects($this->once())
+            ->method('write')
+            ->with($data)
+            ->will($this->returnValue(4));
 
-        /** @var \GravityMedia\Stream\Reader\IntegerReader $readerMock */
-        $this->assertSame($value, $readerMock->readUnsignedInteger32());
+        /** @var \GravityMedia\Stream\Writer\IntegerWriter $writerMock */
+        $this->assertSame(4, $writerMock->writeUnsignedInteger32($value));
     }
 
     /**
@@ -712,31 +713,31 @@ class IntegerReaderTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test reading unsigned 32-bit integer with little endian byte order
+     * Test writing unsigned 32-bit integer with little endian byte order
      *
      * @dataProvider provideUnsignedInteger32LittleEndianValues()
      *
      * @param string $data
      * @param int    $value
      */
-    public function testReadUnsignedInteger32LittleEndian($data, $value)
+    public function testWriteUnsignedInteger32LittleEndian($data, $value)
     {
-        $readerMock = $this->getMockBuilder('GravityMedia\Stream\Reader\IntegerReader')
+        $writerMock = $this->getMockBuilder('GravityMedia\Stream\Writer\IntegerWriter')
             ->disableOriginalConstructor()
-            ->setMethods(['getByteOrder', 'read'])
+            ->setMethods(['getByteOrder', 'write'])
             ->getMock();
 
-        $readerMock->expects($this->atLeast(1))
+        $writerMock->expects($this->atLeast(1))
             ->method('getByteOrder')
             ->will($this->returnValue(ByteOrder::LITTLE_ENDIAN));
 
-        $readerMock->expects($this->once())
-            ->method('read')
-            ->with(4)
-            ->will($this->returnValue($data));
+        $writerMock->expects($this->once())
+            ->method('write')
+            ->with($data)
+            ->will($this->returnValue(4));
 
-        /** @var \GravityMedia\Stream\Reader\IntegerReader $readerMock */
-        $this->assertSame($value, $readerMock->readUnsignedInteger32());
+        /** @var \GravityMedia\Stream\Writer\IntegerWriter $writerMock */
+        $this->assertSame(4, $writerMock->writeUnsignedInteger32($value));
     }
 
     /**
@@ -755,31 +756,31 @@ class IntegerReaderTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test reading unsigned 32-bit integer
+     * Test writing unsigned 32-bit integer
      *
      * @dataProvider provideUnsignedInteger32Values()
      *
      * @param string $data
      * @param int    $value
      */
-    public function testReadUnsignedInteger32($data, $value)
+    public function testWriteUnsignedInteger32($data, $value)
     {
-        $readerMock = $this->getMockBuilder('GravityMedia\Stream\Reader\IntegerReader')
+        $writerMock = $this->getMockBuilder('GravityMedia\Stream\Writer\IntegerWriter')
             ->disableOriginalConstructor()
-            ->setMethods(['getByteOrder', 'read'])
+            ->setMethods(['getByteOrder', 'write'])
             ->getMock();
 
-        $readerMock->expects($this->atLeast(1))
+        $writerMock->expects($this->atLeast(1))
             ->method('getByteOrder')
             ->will($this->returnValue(ByteOrder::MACHINE_ENDIAN));
 
-        $readerMock->expects($this->once())
-            ->method('read')
-            ->with(4)
-            ->will($this->returnValue($data));
+        $writerMock->expects($this->once())
+            ->method('write')
+            ->with($data)
+            ->will($this->returnValue(4));
 
-        /** @var \GravityMedia\Stream\Reader\IntegerReader $readerMock */
-        $this->assertSame($value, $readerMock->readUnsignedInteger32());
+        /** @var \GravityMedia\Stream\Writer\IntegerWriter $writerMock */
+        $this->assertSame(4, $writerMock->writeUnsignedInteger32($value));
     }
 
     /**
@@ -807,31 +808,31 @@ class IntegerReaderTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test reading signed 32-bit integer with big endian byte order
+     * Test writing signed 32-bit integer with big endian byte order
      *
      * @dataProvider provideSignedInteger32BigEndianValues()
      *
      * @param string $data
      * @param int    $value
      */
-    public function testReadSignedInteger32BigEndian($data, $value)
+    public function testWriteSignedInteger32BigEndian($data, $value)
     {
-        $readerMock = $this->getMockBuilder('GravityMedia\Stream\Reader\IntegerReader')
+        $writerMock = $this->getMockBuilder('GravityMedia\Stream\Writer\IntegerWriter')
             ->disableOriginalConstructor()
-            ->setMethods(['getByteOrder', 'read'])
+            ->setMethods(['getByteOrder', 'write'])
             ->getMock();
 
-        $readerMock->expects($this->atLeast(1))
+        $writerMock->expects($this->atLeast(1))
             ->method('getByteOrder')
             ->will($this->returnValue(ByteOrder::BIG_ENDIAN));
 
-        $readerMock->expects($this->once())
-            ->method('read')
-            ->with(4)
-            ->will($this->returnValue($data));
+        $writerMock->expects($this->once())
+            ->method('write')
+            ->with($data)
+            ->will($this->returnValue(4));
 
-        /** @var \GravityMedia\Stream\Reader\IntegerReader $readerMock */
-        $this->assertSame($value, $readerMock->readSignedInteger32());
+        /** @var \GravityMedia\Stream\Writer\IntegerWriter $writerMock */
+        $this->assertSame(4, $writerMock->writeSignedInteger32($value));
     }
 
     /**
@@ -849,31 +850,31 @@ class IntegerReaderTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test reading signed 32-bit integer with little endian byte order
+     * Test writing signed 32-bit integer with little endian byte order
      *
      * @dataProvider provideSignedInteger32LittleEndianValues()
      *
      * @param string $data
      * @param int    $value
      */
-    public function testReadSignedInteger32LittleEndian($data, $value)
+    public function testWriteSignedInteger32LittleEndian($data, $value)
     {
-        $readerMock = $this->getMockBuilder('GravityMedia\Stream\Reader\IntegerReader')
+        $writerMock = $this->getMockBuilder('GravityMedia\Stream\Writer\IntegerWriter')
             ->disableOriginalConstructor()
-            ->setMethods(['getByteOrder', 'read'])
+            ->setMethods(['getByteOrder', 'write'])
             ->getMock();
 
-        $readerMock->expects($this->atLeast(1))
+        $writerMock->expects($this->atLeast(1))
             ->method('getByteOrder')
             ->will($this->returnValue(ByteOrder::LITTLE_ENDIAN));
 
-        $readerMock->expects($this->once())
-            ->method('read')
-            ->with(4)
-            ->will($this->returnValue($data));
+        $writerMock->expects($this->once())
+            ->method('write')
+            ->with($data)
+            ->will($this->returnValue(4));
 
-        /** @var \GravityMedia\Stream\Reader\IntegerReader $readerMock */
-        $this->assertSame($value, $readerMock->readSignedInteger32());
+        /** @var \GravityMedia\Stream\Writer\IntegerWriter $writerMock */
+        $this->assertSame(4, $writerMock->writeSignedInteger32($value));
     }
 
     /**
@@ -891,31 +892,31 @@ class IntegerReaderTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test reading signed 32-bit integer
+     * Test writing signed 32-bit integer
      *
      * @dataProvider provideSignedInteger32Values()
      *
      * @param string $data
      * @param int    $value
      */
-    public function testReadSignedInteger32($data, $value)
+    public function testWriteSignedInteger32($data, $value)
     {
-        $readerMock = $this->getMockBuilder('GravityMedia\Stream\Reader\IntegerReader')
+        $writerMock = $this->getMockBuilder('GravityMedia\Stream\Writer\IntegerWriter')
             ->disableOriginalConstructor()
-            ->setMethods(['getByteOrder', 'read'])
+            ->setMethods(['getByteOrder', 'write'])
             ->getMock();
 
-        $readerMock->expects($this->atLeast(1))
+        $writerMock->expects($this->atLeast(1))
             ->method('getByteOrder')
             ->will($this->returnValue(ByteOrder::MACHINE_ENDIAN));
 
-        $readerMock->expects($this->once())
-            ->method('read')
-            ->with(4)
-            ->will($this->returnValue($data));
+        $writerMock->expects($this->once())
+            ->method('write')
+            ->with($data)
+            ->will($this->returnValue(4));
 
-        /** @var \GravityMedia\Stream\Reader\IntegerReader $readerMock */
-        $this->assertSame($value, $readerMock->readSignedInteger32());
+        /** @var \GravityMedia\Stream\Writer\IntegerWriter $writerMock */
+        $this->assertSame(4, $writerMock->writeSignedInteger32($value));
     }
 
     /**
@@ -941,31 +942,31 @@ class IntegerReaderTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test reading unsigned 64-bit integer with big endian byte order
+     * Test writing unsigned 64-bit integer with big endian byte order
      *
      * @dataProvider provideUnsignedInteger64BigEndianValues()
      *
      * @param string $data
      * @param int    $value
      */
-    public function testReadUnsignedInteger64BigEndian($data, $value)
+    public function testWriteUnsignedInteger64BigEndian($data, $value)
     {
-        $readerMock = $this->getMockBuilder('GravityMedia\Stream\Reader\IntegerReader')
+        $writerMock = $this->getMockBuilder('GravityMedia\Stream\Writer\IntegerWriter')
             ->disableOriginalConstructor()
-            ->setMethods(['getByteOrder', 'read'])
+            ->setMethods(['getByteOrder', 'write'])
             ->getMock();
 
-        $readerMock->expects($this->atLeast(1))
+        $writerMock->expects($this->atLeast(1))
             ->method('getByteOrder')
             ->will($this->returnValue(ByteOrder::BIG_ENDIAN));
 
-        $readerMock->expects($this->once())
-            ->method('read')
-            ->with(8)
-            ->will($this->returnValue($data));
+        $writerMock->expects($this->once())
+            ->method('write')
+            ->with($data)
+            ->will($this->returnValue(8));
 
-        /** @var \GravityMedia\Stream\Reader\IntegerReader $readerMock */
-        $this->assertSame($value, $readerMock->readUnsignedInteger64());
+        /** @var \GravityMedia\Stream\Writer\IntegerWriter $writerMock */
+        $this->assertSame(8, $writerMock->writeUnsignedInteger64($value));
     }
 
     /**
@@ -984,31 +985,31 @@ class IntegerReaderTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test reading unsigned 64-bit integer with little endian byte order
+     * Test writing unsigned 64-bit integer with little endian byte order
      *
      * @dataProvider provideUnsignedInteger64LittleEndianValues()
      *
      * @param string $data
      * @param int    $value
      */
-    public function testReadUnsignedInteger64LittleEndian($data, $value)
+    public function testWriteUnsignedInteger64LittleEndian($data, $value)
     {
-        $readerMock = $this->getMockBuilder('GravityMedia\Stream\Reader\IntegerReader')
+        $writerMock = $this->getMockBuilder('GravityMedia\Stream\Writer\IntegerWriter')
             ->disableOriginalConstructor()
-            ->setMethods(['getByteOrder', 'read'])
+            ->setMethods(['getByteOrder', 'write'])
             ->getMock();
 
-        $readerMock->expects($this->atLeast(1))
+        $writerMock->expects($this->atLeast(1))
             ->method('getByteOrder')
             ->will($this->returnValue(ByteOrder::LITTLE_ENDIAN));
 
-        $readerMock->expects($this->once())
-            ->method('read')
-            ->with(8)
-            ->will($this->returnValue($data));
+        $writerMock->expects($this->once())
+            ->method('write')
+            ->with($data)
+            ->will($this->returnValue(8));
 
-        /** @var \GravityMedia\Stream\Reader\IntegerReader $readerMock */
-        $this->assertSame($value, $readerMock->readUnsignedInteger64());
+        /** @var \GravityMedia\Stream\Writer\IntegerWriter $writerMock */
+        $this->assertSame(8, $writerMock->writeUnsignedInteger64($value));
     }
 
     /**
@@ -1027,31 +1028,31 @@ class IntegerReaderTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test reading unsigned 64-bit integer
+     * Test writing unsigned 64-bit integer
      *
      * @dataProvider provideUnsignedInteger64Values()
      *
      * @param string $data
      * @param int    $value
      */
-    public function testReadUnsignedInteger64($data, $value)
+    public function testWriteUnsignedInteger64($data, $value)
     {
-        $readerMock = $this->getMockBuilder('GravityMedia\Stream\Reader\IntegerReader')
+        $writerMock = $this->getMockBuilder('GravityMedia\Stream\Writer\IntegerWriter')
             ->disableOriginalConstructor()
-            ->setMethods(['getByteOrder', 'read'])
+            ->setMethods(['getByteOrder', 'write'])
             ->getMock();
 
-        $readerMock->expects($this->atLeast(1))
+        $writerMock->expects($this->atLeast(1))
             ->method('getByteOrder')
             ->will($this->returnValue(ByteOrder::MACHINE_ENDIAN));
 
-        $readerMock->expects($this->once())
-            ->method('read')
-            ->with(8)
-            ->will($this->returnValue($data));
+        $writerMock->expects($this->once())
+            ->method('write')
+            ->with($data)
+            ->will($this->returnValue(8));
 
-        /** @var \GravityMedia\Stream\Reader\IntegerReader $readerMock */
-        $this->assertSame($value, $readerMock->readUnsignedInteger64());
+        /** @var \GravityMedia\Stream\Writer\IntegerWriter $writerMock */
+        $this->assertSame(8, $writerMock->writeUnsignedInteger64($value));
     }
 
     /**
@@ -1079,31 +1080,31 @@ class IntegerReaderTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test reading signed 64-bit integer with big endian byte order
+     * Test writing signed 64-bit integer with big endian byte order
      *
      * @dataProvider provideSignedInteger64BigEndianValues()
      *
      * @param string $data
      * @param int    $value
      */
-    public function testReadSignedInteger64BigEndian($data, $value)
+    public function testWriteSignedInteger64BigEndian($data, $value)
     {
-        $readerMock = $this->getMockBuilder('GravityMedia\Stream\Reader\IntegerReader')
+        $writerMock = $this->getMockBuilder('GravityMedia\Stream\Writer\IntegerWriter')
             ->disableOriginalConstructor()
-            ->setMethods(['getByteOrder', 'read'])
+            ->setMethods(['getByteOrder', 'write'])
             ->getMock();
 
-        $readerMock->expects($this->atLeast(1))
+        $writerMock->expects($this->atLeast(1))
             ->method('getByteOrder')
             ->will($this->returnValue(ByteOrder::BIG_ENDIAN));
 
-        $readerMock->expects($this->once())
-            ->method('read')
-            ->with(8)
-            ->will($this->returnValue($data));
+        $writerMock->expects($this->once())
+            ->method('write')
+            ->with($data)
+            ->will($this->returnValue(8));
 
-        /** @var \GravityMedia\Stream\Reader\IntegerReader $readerMock */
-        $this->assertSame($value, $readerMock->readSignedInteger64());
+        /** @var \GravityMedia\Stream\Writer\IntegerWriter $writerMock */
+        $this->assertSame(8, $writerMock->writeSignedInteger64($value));
     }
 
     /**
@@ -1121,31 +1122,31 @@ class IntegerReaderTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test reading signed 64-bit integer with little endian byte order
+     * Test writing signed 64-bit integer with little endian byte order
      *
      * @dataProvider provideSignedInteger64LittleEndianValues()
      *
      * @param string $data
      * @param int    $value
      */
-    public function testReadSignedInteger64LittleEndian($data, $value)
+    public function testWriteSignedInteger64LittleEndian($data, $value)
     {
-        $readerMock = $this->getMockBuilder('GravityMedia\Stream\Reader\IntegerReader')
+        $writerMock = $this->getMockBuilder('GravityMedia\Stream\Writer\IntegerWriter')
             ->disableOriginalConstructor()
-            ->setMethods(['getByteOrder', 'read'])
+            ->setMethods(['getByteOrder', 'write'])
             ->getMock();
 
-        $readerMock->expects($this->atLeast(1))
+        $writerMock->expects($this->atLeast(1))
             ->method('getByteOrder')
             ->will($this->returnValue(ByteOrder::LITTLE_ENDIAN));
 
-        $readerMock->expects($this->once())
-            ->method('read')
-            ->with(8)
-            ->will($this->returnValue($data));
+        $writerMock->expects($this->once())
+            ->method('write')
+            ->with($data)
+            ->will($this->returnValue(8));
 
-        /** @var \GravityMedia\Stream\Reader\IntegerReader $readerMock */
-        $this->assertSame($value, $readerMock->readSignedInteger64());
+        /** @var \GravityMedia\Stream\Writer\IntegerWriter $writerMock */
+        $this->assertSame(8, $writerMock->writeSignedInteger64($value));
     }
 
     /**
@@ -1163,31 +1164,31 @@ class IntegerReaderTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test reading signed 64-bit integer
+     * Test writing signed 64-bit integer
      *
      * @dataProvider provideSignedInteger64Values()
      *
      * @param string $data
      * @param int    $value
      */
-    public function testReadSignedInteger64($data, $value)
+    public function testWriteSignedInteger64($data, $value)
     {
-        $readerMock = $this->getMockBuilder('GravityMedia\Stream\Reader\IntegerReader')
+        $writerMock = $this->getMockBuilder('GravityMedia\Stream\Writer\IntegerWriter')
             ->disableOriginalConstructor()
-            ->setMethods(['getByteOrder', 'read'])
+            ->setMethods(['getByteOrder', 'write'])
             ->getMock();
 
-        $readerMock->expects($this->atLeast(1))
+        $writerMock->expects($this->atLeast(1))
             ->method('getByteOrder')
             ->will($this->returnValue(ByteOrder::MACHINE_ENDIAN));
 
-        $readerMock->expects($this->once())
-            ->method('read')
-            ->with(8)
-            ->will($this->returnValue($data));
+        $writerMock->expects($this->once())
+            ->method('write')
+            ->with($data)
+            ->will($this->returnValue(8));
 
-        /** @var \GravityMedia\Stream\Reader\IntegerReader $readerMock */
-        $this->assertSame($value, $readerMock->readSignedInteger64());
+        /** @var \GravityMedia\Stream\Writer\IntegerWriter $writerMock */
+        $this->assertSame(8, $writerMock->writeSignedInteger64($value));
     }
 
     /**

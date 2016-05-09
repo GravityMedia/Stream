@@ -69,7 +69,7 @@ trait ByteOrderAwareTrait
         if (null === static::$machineByteOrder) {
             static::$machineByteOrder = ByteOrder::BIG_ENDIAN;
 
-            list(, $value) = unpack('l*', "\x01\x00\x00\x00");
+            list(, $value) = unpack('s', "\x01\x00");
             if (1 === $value) {
                 static::$machineByteOrder = ByteOrder::LITTLE_ENDIAN;
             }

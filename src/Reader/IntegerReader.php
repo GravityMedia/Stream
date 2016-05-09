@@ -94,28 +94,17 @@ class IntegerReader extends Reader
     {
         $data = $this->read(3);
 
-        switch ($this->getByteOrder()) {
-            case ByteOrder::BIG_ENDIAN:
-                $format = 'N';
-                break;
-            case ByteOrder::LITTLE_ENDIAN:
-                $format = 'V';
-                break;
-            default:
-                $format = 'L';
+        $byteOrder = $this->getByteOrder();
+        if ($byteOrder === ByteOrder::MACHINE_ENDIAN) {
+            $byteOrder = $this->getMachineByteOrder();
         }
 
-        switch ($this->getMachineByteOrder()) {
-            case ByteOrder::BIG_ENDIAN:
-                $data = $data . "\x00";
-                break;
-            case ByteOrder::LITTLE_ENDIAN:
-                $data = "\x00" . $data;
-                break;
+        if ($byteOrder !== $this->getMachineByteOrder()) {
+            $data = strrev($data);
         }
 
-        list(, $value) = unpack($format, $data);
-        return $value;
+        $values = unpack('C3', $data);
+        return $values[1] | $values[2] << 8 | $values[3] << 16;
     }
 
     /**
@@ -125,24 +114,12 @@ class IntegerReader extends Reader
      */
     public function readSignedInteger24()
     {
-        $data = $this->read(3);
+        $value = $this->readUnsignedInteger24();
 
-        if ($this->getByteOrder() !== ByteOrder::MACHINE_ENDIAN
-            && $this->getByteOrder() !== $this->getMachineByteOrder()
-        ) {
-            $data = strrev($data);
+        if ($value & 0x800000) {
+            return $value - 2 ** 24;
         }
 
-        switch ($this->getMachineByteOrder()) {
-            case ByteOrder::BIG_ENDIAN:
-                $data = $data . "\x00";
-                break;
-            case ByteOrder::LITTLE_ENDIAN:
-                $data = "\x00" . $data;
-                break;
-        }
-
-        list(, $value) = unpack('l', $data);
         return $value;
     }
 
