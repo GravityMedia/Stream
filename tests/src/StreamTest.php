@@ -254,6 +254,72 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * Provide signed 48-bit integers
+     *
+     * @return array
+     */
+    public function provideInt48Values()
+    {
+        $values = [
+            [ByteOrder::BIG_ENDIAN, "\x80\x00\x00\x00\x00\x00", -140737488355328],
+            [ByteOrder::BIG_ENDIAN, "\x00\x00\x00\x00\x00\x00", 0],
+            [ByteOrder::BIG_ENDIAN, "\x7f\xff\xff\xff\xff\xff", 140737488355327],
+            [ByteOrder::LITTLE_ENDIAN, "\x00\x00\x00\x00\x00\x80", -140737488355328],
+            [ByteOrder::LITTLE_ENDIAN, "\x00\x00\x00\x00\x00\x00", 0],
+            [ByteOrder::LITTLE_ENDIAN, "\xff\xff\xff\xff\xff\x7f", 140737488355327]
+        ];
+
+        if (ByteOrder::LITTLE_ENDIAN === ByteOrderHelper::getMachineByteOrder()) {
+            return array_merge($values, [
+                [ByteOrder::MACHINE_ENDIAN, "\x00\x00\x00\x00\x00\x80", -140737488355328],
+                [ByteOrder::MACHINE_ENDIAN, "\x00\x00\x00\x00\x00\x00", 0],
+                [ByteOrder::MACHINE_ENDIAN, "\xff\xff\xff\xff\xff\x7f", 140737488355327]
+            ]);
+        }
+
+        return array_merge($values, [
+            [ByteOrder::MACHINE_ENDIAN, "\x80\x00\x00\x00\x00\x00", -140737488355328],
+            [ByteOrder::MACHINE_ENDIAN, "\x00\x00\x00\x00\x00\x00", 0],
+            [ByteOrder::MACHINE_ENDIAN, "\x7f\xff\xff\xff\xff\xff", 140737488355327]
+        ]);
+    }
+
+    /**
+     * Provide unsigned 48-bit integers
+     *
+     * @return array
+     */
+    public function provideUInt48Values()
+    {
+        $values = [
+            [ByteOrder::BIG_ENDIAN, "\x00\x00\x00\x00\x00\x00", 0],
+            [ByteOrder::BIG_ENDIAN, "\x00\x00\x00\x00\x00\x01", 1],
+            [ByteOrder::BIG_ENDIAN, "\x00\x00\x00\x00\x00\xff", 255],
+            [ByteOrder::BIG_ENDIAN, "\xff\xff\xff\xff\xff\xff", 281474976710655],
+            [ByteOrder::LITTLE_ENDIAN, "\x00\x00\x00\x00\x00\x00", 0],
+            [ByteOrder::LITTLE_ENDIAN, "\x01\x00\x00\x00\x00\x00", 1],
+            [ByteOrder::LITTLE_ENDIAN, "\xff\x00\x00\x00\x00\x00", 255],
+            [ByteOrder::LITTLE_ENDIAN, "\xff\xff\xff\xff\xff\xff", 281474976710655]
+        ];
+
+        if (ByteOrder::LITTLE_ENDIAN === ByteOrderHelper::getMachineByteOrder()) {
+            return array_merge($values, [
+                [ByteOrder::MACHINE_ENDIAN, "\x00\x00\x00\x00\x00\x00", 0],
+                [ByteOrder::MACHINE_ENDIAN, "\x01\x00\x00\x00\x00\x00", 1],
+                [ByteOrder::MACHINE_ENDIAN, "\xff\x00\x00\x00\x00\x00", 255],
+                [ByteOrder::MACHINE_ENDIAN, "\xff\xff\xff\xff\xff\xff", 281474976710655]
+            ]);
+        }
+
+        return array_merge($values, [
+            [ByteOrder::MACHINE_ENDIAN, "\x00\x00\x00\x00\x00\x00", 0],
+            [ByteOrder::MACHINE_ENDIAN, "\x00\x00\x00\x00\x00\x01", 1],
+            [ByteOrder::MACHINE_ENDIAN, "\x00\x00\x00\x00\x00\xff", 255],
+            [ByteOrder::MACHINE_ENDIAN, "\xff\xff\xff\xff\xff\xff", 281474976710655]
+        ]);
+    }
+
+    /**
      * Provide signed 64-bit integers
      *
      * @return array
@@ -884,6 +950,64 @@ class StreamTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * Test reading signed 48-bit integer
+     *
+     * @dataProvider provideInt48Values()
+     *
+     * @param int    $byteOrder
+     * @param string $data
+     * @param int    $value
+     */
+    public function testReadingInt48($byteOrder, $data, $value)
+    {
+        $readerMock = $this->getMockBuilder(Stream::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getByteOrder', 'read'])
+            ->getMock();
+
+        $readerMock->expects($this->atLeast(1))
+            ->method('getByteOrder')
+            ->will($this->returnValue($byteOrder));
+
+        $readerMock->expects($this->once())
+            ->method('read')
+            ->with(6)
+            ->will($this->returnValue($data));
+
+        /** @var \GravityMedia\Stream\Stream $readerMock */
+        $this->assertSame($value, $readerMock->readInt48());
+    }
+
+    /**
+     * Test reading unsigned 48-bit integer
+     *
+     * @dataProvider provideUInt48Values()
+     *
+     * @param int    $byteOrder
+     * @param string $data
+     * @param int    $value
+     */
+    public function testReadingUInt48($byteOrder, $data, $value)
+    {
+        $readerMock = $this->getMockBuilder(Stream::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getByteOrder', 'read'])
+            ->getMock();
+
+        $readerMock->expects($this->atLeast(1))
+            ->method('getByteOrder')
+            ->will($this->returnValue($byteOrder));
+
+        $readerMock->expects($this->once())
+            ->method('read')
+            ->with(6)
+            ->will($this->returnValue($data));
+
+        /** @var \GravityMedia\Stream\Stream $readerMock */
+        $this->assertSame($value, $readerMock->readUInt48());
+    }
+
+    /**
      * Test reading signed 64-bit integer
      *
      * @dataProvider provideInt64Values()
@@ -1225,6 +1349,64 @@ class StreamTest extends \PHPUnit_Framework_TestCase
 
         /** @var \GravityMedia\Stream\Stream $streamMock */
         $this->assertSame(4, $streamMock->writeUInt32($value));
+    }
+
+    /**
+     * Test writing signed 48-bit integer
+     *
+     * @dataProvider provideInt48Values()
+     *
+     * @param int    $byteOrder
+     * @param string $data
+     * @param int    $value
+     */
+    public function testWritingInt48($byteOrder, $data, $value)
+    {
+        $streamMock = $this->getMockBuilder(Stream::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getByteOrder', 'write'])
+            ->getMock();
+
+        $streamMock->expects($this->atLeast(1))
+            ->method('getByteOrder')
+            ->will($this->returnValue($byteOrder));
+
+        $streamMock->expects($this->once())
+            ->method('write')
+            ->with($data)
+            ->will($this->returnValue(6));
+
+        /** @var \GravityMedia\Stream\Stream $streamMock */
+        $this->assertSame(6, $streamMock->writeInt48($value));
+    }
+
+    /**
+     * Test writing unsigned 48-bit integer
+     *
+     * @dataProvider provideUInt48Values()
+     *
+     * @param int    $byteOrder
+     * @param string $data
+     * @param int    $value
+     */
+    public function testWritingUInt48($byteOrder, $data, $value)
+    {
+        $streamMock = $this->getMockBuilder(Stream::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getByteOrder', 'write'])
+            ->getMock();
+
+        $streamMock->expects($this->atLeast(1))
+            ->method('getByteOrder')
+            ->will($this->returnValue($byteOrder));
+
+        $streamMock->expects($this->once())
+            ->method('write')
+            ->with($data)
+            ->will($this->returnValue(6));
+
+        /** @var \GravityMedia\Stream\Stream $streamMock */
+        $this->assertSame(6, $streamMock->writeUInt48($value));
     }
 
     /**

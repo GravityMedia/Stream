@@ -339,6 +339,24 @@ class Stream
     }
 
     /**
+     * Align the data in relation to the byte order.
+     *
+     * @param string $data
+     *
+     * @return string
+     */
+    protected function alignData($data)
+    {
+        if ($this->getByteOrder() !== ByteOrder::MACHINE_ENDIAN
+            && $this->getByteOrder() !== $this->getMachineByteOrder()
+        ) {
+            return strrev($data);
+        }
+
+        return $data;
+    }
+
+    /**
      * Read up to $length number of bytes of data from the stream.
      *
      * @param int $length The maximum number of bytes to read.
@@ -409,15 +427,7 @@ class Stream
      */
     public function readInt16()
     {
-        $data = $this->read(2);
-
-        if ($this->getByteOrder() !== ByteOrder::MACHINE_ENDIAN
-            && $this->getByteOrder() !== $this->getMachineByteOrder()
-        ) {
-            $data = strrev($data);
-        }
-
-        list(, $value) = unpack('s', $data);
+        list(, $value) = unpack('s', $this->alignData($this->read(2)));
         return $value;
     }
 
@@ -448,7 +458,7 @@ class Stream
     }
 
     /**
-     * Read signed 24-bit integer (short) data from the stream.
+     * Read signed 24-bit integer data from the stream.
      *
      * @throws Exception\BadMethodCallException An exception will be thrown for non-readable streams.
      * @throws Exception\IOException            An exception will be thrown for invalid stream resources or when the
@@ -461,14 +471,14 @@ class Stream
         $value = $this->readUInt24();
 
         if ($value & 0x800000) {
-            return $value - 2 ** 24;
+            $value -= 0x1000000;
         }
 
         return $value;
     }
 
     /**
-     * Read unsigned 24-bit integer (short) data from the stream.
+     * Read unsigned 24-bit integer data from the stream.
      *
      * @throws Exception\BadMethodCallException An exception will be thrown for non-readable streams.
      * @throws Exception\IOException            An exception will be thrown for invalid stream resources or when the
@@ -478,18 +488,7 @@ class Stream
      */
     public function readUInt24()
     {
-        $data = $this->read(3);
-
-        $byteOrder = $this->getByteOrder();
-        if ($byteOrder === ByteOrder::MACHINE_ENDIAN) {
-            $byteOrder = $this->getMachineByteOrder();
-        }
-
-        if ($byteOrder !== $this->getMachineByteOrder()) {
-            $data = strrev($data);
-        }
-
-        $values = unpack('C3', $data);
+        $values = unpack('C3', $this->alignData($this->read(3)));
         return $values[1] | $values[2] << 8 | $values[3] << 16;
     }
 
@@ -504,15 +503,7 @@ class Stream
      */
     public function readInt32()
     {
-        $data = $this->read(4);
-
-        if ($this->getByteOrder() !== ByteOrder::MACHINE_ENDIAN
-            && $this->getByteOrder() !== $this->getMachineByteOrder()
-        ) {
-            $data = strrev($data);
-        }
-
-        list(, $value) = unpack('l', $data);
+        list(, $value) = unpack('l', $this->alignData($this->read(4)));
         return $value;
     }
 
@@ -543,6 +534,41 @@ class Stream
     }
 
     /**
+     * Read signed 48-bit integer data from the stream.
+     *
+     * @throws Exception\BadMethodCallException An exception will be thrown for non-readable streams.
+     * @throws Exception\IOException            An exception will be thrown for invalid stream resources or when the
+     *                                          data could not be read.
+     *
+     * @return int
+     */
+    public function readInt48()
+    {
+        $value = $this->readUInt48();
+
+        if ($value & 0x800000000000) {
+            $value -= 0x1000000000000;
+        }
+
+        return $value;
+    }
+
+    /**
+     * Read unsigned 48-bit integer data from the stream.
+     *
+     * @throws Exception\BadMethodCallException An exception will be thrown for non-readable streams.
+     * @throws Exception\IOException            An exception will be thrown for invalid stream resources or when the
+     *                                          data could not be read.
+     *
+     * @return int
+     */
+    public function readUInt48()
+    {
+        $values = unpack('C6', $this->alignData($this->read(6)));
+        return $values[1] | $values[2] << 8 | $values[3] << 16 | $values[4] << 24 | $values[5] << 32 | $values[6] << 40;
+    }
+
+    /**
      * Read signed 64-bit integer (long long) data from the stream.
      *
      * @throws Exception\BadMethodCallException An exception will be thrown for non-readable streams.
@@ -553,15 +579,7 @@ class Stream
      */
     public function readInt64()
     {
-        $data = $this->read(8);
-
-        if ($this->getByteOrder() !== ByteOrder::MACHINE_ENDIAN
-            && $this->getByteOrder() !== $this->getMachineByteOrder()
-        ) {
-            $data = strrev($data);
-        }
-
-        list(, $value) = unpack('q', $data);
+        list(, $value) = unpack('q', $this->alignData($this->read(8)));
         return $value;
     }
 
@@ -654,15 +672,7 @@ class Stream
      */
     public function writeInt16($value)
     {
-        $data = pack('s', $value);
-
-        if ($this->getByteOrder() !== ByteOrder::MACHINE_ENDIAN
-            && $this->getByteOrder() !== $this->getMachineByteOrder()
-        ) {
-            $data = strrev($data);
-        }
-
-        return $this->write($data);
+        return $this->write($this->alignData(pack('s', $value)));
     }
 
     /**
@@ -689,7 +699,7 @@ class Stream
     }
 
     /**
-     * Write signed 24-bit integer (short) data to the stream
+     * Write signed 24-bit integer data to the stream
      *
      * @param int $value The value
      *
@@ -698,14 +708,14 @@ class Stream
     public function writeInt24($value)
     {
         if ($value & 0x7fffff) {
-            $value += 2 ** 24;
+            $value += 0x1000000;
         }
 
         return $this->writeUInt24($value);
     }
 
     /**
-     * Write unsigned 24-bit integer (short) data to the stream
+     * Write unsigned 24-bit integer data to the stream
      *
      * @param int $value The value
      *
@@ -713,18 +723,7 @@ class Stream
      */
     public function writeUInt24($value)
     {
-        $data = pack('C3', $value, $value >> 8, $value >> 16);
-
-        $byteOrder = $this->getByteOrder();
-        if ($byteOrder === ByteOrder::MACHINE_ENDIAN) {
-            $byteOrder = $this->getMachineByteOrder();
-        }
-
-        if ($byteOrder !== $this->getMachineByteOrder()) {
-            $data = strrev($data);
-        }
-
-        return $this->write($data);
+        return $this->write($this->alignData(pack('C3', $value, $value >> 8, $value >> 16)));
     }
 
     /**
@@ -736,15 +735,7 @@ class Stream
      */
     public function writeInt32($value)
     {
-        $data = pack('l', $value);
-
-        if ($this->getByteOrder() !== ByteOrder::MACHINE_ENDIAN
-            && $this->getByteOrder() !== $this->getMachineByteOrder()
-        ) {
-            $data = strrev($data);
-        }
-
-        return $this->write($data);
+        return $this->write($this->alignData(pack('l', $value)));
     }
 
     /**
@@ -771,6 +762,36 @@ class Stream
     }
 
     /**
+     * Write signed 48-bit integer data to the stream
+     *
+     * @param int $value The value
+     *
+     * @return int
+     */
+    public function writeInt48($value)
+    {
+        if ($value & 0x7fffffffffff) {
+            $value += 0x1000000000000;
+        }
+
+        return $this->writeUInt48($value);
+    }
+
+    /**
+     * Write unsigned 48-bit integer data to the stream
+     *
+     * @param int $value The value
+     *
+     * @return int
+     */
+    public function writeUInt48($value)
+    {
+        return $this->write($this->alignData(
+            pack('C6', $value, $value >> 8, $value >> 16, $value >> 24, $value >> 32, $value >> 40)
+        ));
+    }
+
+    /**
      * Write signed 64-bit integer (long long) data to the stream
      *
      * @param int $value The value
@@ -779,15 +800,7 @@ class Stream
      */
     public function writeInt64($value)
     {
-        $data = pack('q', $value);
-
-        if ($this->getByteOrder() !== ByteOrder::MACHINE_ENDIAN
-            && $this->getByteOrder() !== $this->getMachineByteOrder()
-        ) {
-            $data = strrev($data);
-        }
-
-        return $this->write($data);
+        return $this->write($this->alignData(pack('q', $value)));
     }
 
     /**
