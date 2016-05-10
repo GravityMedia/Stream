@@ -8,7 +8,7 @@
 namespace GravityMedia\Stream\Exception;
 
 /**
- * Invalid argument exception
+ * Invalid argument exception class.
  *
  * @package GravityMedia\Stream\Exception
  */

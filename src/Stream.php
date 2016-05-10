@@ -10,7 +10,7 @@ namespace GravityMedia\Stream;
 use GravityMedia\Stream\Exception;
 
 /**
- * Stream
+ * Stream class.
  *
  * @package GravityMedia\Stream
  */

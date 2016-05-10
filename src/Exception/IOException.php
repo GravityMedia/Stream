@@ -8,7 +8,7 @@
 namespace GravityMedia\Stream\Exception;
 
 /**
- * IO exception
+ * IO exception class.
  *
  * @package GravityMedia\Stream\Exception
  */

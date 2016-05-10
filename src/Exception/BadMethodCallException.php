@@ -8,7 +8,7 @@
 namespace GravityMedia\Stream\Exception;
 
 /**
- * Bad method call exception
+ * Bad method call exception class.
  *
  * @package GravityMedia\Stream\Exception
  */

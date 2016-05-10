@@ -8,7 +8,7 @@
 namespace GravityMedia\Stream;
 
 /**
- * Byte order enum
+ * Byte order class.
  *
  * @package GravityMedia\Stream
  */
