@@ -8,6 +8,7 @@
 namespace GravityMedia\StreamTest;
 
 use GravityMedia\Stream\Stream;
+use GravityMedia\StreamTest\Helper\ResourceHelper;
 
 /**
  * Stream test
@@ -18,54 +19,6 @@ use GravityMedia\Stream\Stream;
  */
 class StreamTest extends \PHPUnit_Framework_TestCase
 {
-    /**
-     * The URI of the resource
-     */
-    const RESOURCE_URI = 'php://temp';
-
-    /**
-     * The read/write-mode of the resource
-     */
-    const RESOURCE_MODE = 'r+';
-
-    /**
-     * @var resource
-     */
-    protected $resource;
-
-    /**
-     * Get resource
-     *
-     * @param string|null $contents
-     * @param int         $offset
-     *
-     * @return resource
-     */
-    protected function getResource($contents = null, $offset = 0)
-    {
-        if (null === $this->resource) {
-            $this->resource = fopen(static::RESOURCE_URI, static::RESOURCE_MODE);
-        }
-
-        ftruncate($this->resource, 0);
-
-        if (null !== $contents) {
-            fwrite($this->resource, $contents);
-        }
-
-        fseek($this->resource, $offset);
-
-        return $this->resource;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function tearDown()
-    {
-        @fclose($this->resource);
-    }
-
     /**
      * Test that the stream creation throws an exception on invalid resource argument
      *
@@ -85,7 +38,9 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      */
     public function testBindingInvalidResourceThrowsException()
     {
-        $resource = $this->getResource();
+        $resourceHelper = new ResourceHelper();
+        $resource = $resourceHelper->getResource();
+
         $stream = Stream::fromResource($resource);
 
         $stream->bindResource(null);
@@ -96,7 +51,9 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      */
     public function testGettingResourceFromStream()
     {
-        $resource = $this->getResource();
+        $resourceHelper = new ResourceHelper();
+        $resource = $resourceHelper->getResource();
+
         $stream = Stream::fromResource($resource);
 
         $this->assertEquals($resource, $stream->getResource());
@@ -107,14 +64,16 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      */
     public function testStreamCreationInitializesMetaData()
     {
-        $resource = $this->getResource();
+        $resourceHelper = new ResourceHelper();
+        $resource = $resourceHelper->getResource();
+
         $stream = Stream::fromResource($resource);
 
         $this->assertTrue($stream->isLocal());
         $this->assertTrue($stream->isReadable());
         $this->assertTrue($stream->isWritable());
         $this->assertTrue($stream->isSeekable());
-        $this->assertEquals(static::RESOURCE_URI, $stream->getUri());
+        $this->assertEquals(ResourceHelper::RESOURCE_URI, $stream->getUri());
     }
 
     /**
@@ -145,10 +104,11 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      */
     public function testGettingSizeThrowsExceptionOnClosedStream()
     {
-        $resource = $this->getResource();
-        $stream = Stream::fromResource($resource);
-        fclose($resource);
+        $resourceHelper = new ResourceHelper();
+        $resource = $resourceHelper->getResource();
 
+        $stream = Stream::fromResource($resource);
+        $stream->close();
         $stream->getSize();
     }
 
@@ -157,7 +117,10 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      */
     public function testGettingSize()
     {
-        $resource = $this->getResource('contents');
+        $resourceHelper = new ResourceHelper();
+        $resource = $resourceHelper->getResource();
+        fwrite($resource, 'contents');
+
         $stream = Stream::fromResource($resource);
 
         $this->assertEquals(8, $stream->getSize());
@@ -171,10 +134,11 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      */
     public function testEndOfStreamThrowsExceptionOnClosedStream()
     {
-        $resource = $this->getResource();
-        $stream = Stream::fromResource($resource);
-        fclose($resource);
+        $resourceHelper = new ResourceHelper();
+        $resource = $resourceHelper->getResource();
 
+        $stream = Stream::fromResource($resource);
+        $stream->close();
         $stream->eof();
     }
 
@@ -183,8 +147,10 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      */
     public function testEndOfStream()
     {
-        $resource = $this->getResource();
+        $resourceHelper = new ResourceHelper();
+        $resource = $resourceHelper->getResource();
         fread($resource, 1);
+
         $stream = Stream::fromResource($resource);
 
         $this->assertTrue($stream->eof());
@@ -198,10 +164,11 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      */
     public function testLocatingPositionThrowsExceptionOnClosedStream()
     {
-        $resource = $this->getResource();
-        $stream = Stream::fromResource($resource);
-        fclose($resource);
+        $resourceHelper = new ResourceHelper();
+        $resource = $resourceHelper->getResource();
 
+        $stream = Stream::fromResource($resource);
+        $stream->close();
         $stream->tell();
     }
 
@@ -210,8 +177,12 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      */
     public function testLocatingPosition()
     {
-        $resource = $this->getResource('contents', 4);
+        $resourceHelper = new ResourceHelper();
+        $resource = $resourceHelper->getResource();
+        fwrite($resource, 'contents');
+
         $stream = Stream::fromResource($resource);
+        $stream->seek(4);
 
         $this->assertEquals(4, $stream->tell());
     }
@@ -224,13 +195,16 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      */
     public function testSeekingPositionThrowsExceptionOnNonSeekableStream()
     {
+        $resourceHelper = new ResourceHelper();
+        $resource = $resourceHelper->getResource();
+
         $streamMock = $this->getMockBuilder('GravityMedia\Stream\Stream')
             ->setMethods(['getResource', 'isSeekable'])
             ->getMock();
 
         $streamMock->expects($this->once())
             ->method('getResource')
-            ->will($this->returnValue($this->getResource()));
+            ->will($this->returnValue($resource));
 
         $streamMock->expects($this->once())
             ->method('isSeekable')
@@ -248,10 +222,11 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      */
     public function testSeekingPositionThrowsExceptionOnClosedStream()
     {
-        $resource = $this->getResource();
-        $stream = Stream::fromResource($resource);
-        fclose($resource);
+        $resourceHelper = new ResourceHelper();
+        $resource = $resourceHelper->getResource();
 
+        $stream = Stream::fromResource($resource);
+        $stream->close();
         $stream->seek(0);
     }
 
@@ -263,9 +238,10 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      */
     public function testSeekingPositionThrowsExceptionOnInvalidOffset()
     {
-        $resource = $this->getResource();
-        $stream = Stream::fromResource($resource);
+        $resourceHelper = new ResourceHelper();
+        $resource = $resourceHelper->getResource();
 
+        $stream = Stream::fromResource($resource);
         $stream->seek(-1);
     }
 
@@ -274,7 +250,10 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      */
     public function testSeekingPosition()
     {
-        $resource = $this->getResource('contents');
+        $resourceHelper = new ResourceHelper();
+        $resource = $resourceHelper->getResource();
+        fwrite($resource, 'contents');
+
         $stream = Stream::fromResource($resource);
 
         $this->assertEquals(0, $stream->seek(-8, SEEK_END));
@@ -285,7 +264,10 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      */
     public function testRewindPosition()
     {
-        $resource = $this->getResource('contents');
+        $resourceHelper = new ResourceHelper();
+        $resource = $resourceHelper->getResource();
+        fwrite($resource, 'contents');
+
         $stream = Stream::fromResource($resource);
 
         $this->assertEquals(0, $stream->rewind());
@@ -299,10 +281,11 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      */
     public function testReadingDataThrowsExceptionOnClosedStream()
     {
-        $resource = $this->getResource();
-        $stream = Stream::fromResource($resource);
-        fclose($resource);
+        $resourceHelper = new ResourceHelper();
+        $resource = $resourceHelper->getResource();
 
+        $stream = Stream::fromResource($resource);
+        $stream->close();
         $stream->read(1);
     }
 
@@ -314,13 +297,16 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      */
     public function testReadingDataThrowsExceptionOnNonReadableStream()
     {
+        $resourceHelper = new ResourceHelper();
+        $resource = $resourceHelper->getResource();
+
         $streamMock = $this->getMockBuilder('GravityMedia\Stream\Stream')
             ->setMethods(['getResource', 'isReadable'])
             ->getMock();
 
         $streamMock->expects($this->once())
             ->method('getResource')
-            ->will($this->returnValue($this->getResource()));
+            ->will($this->returnValue($resource));
 
         $streamMock->expects($this->once())
             ->method('isReadable')
@@ -338,9 +324,10 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      */
     public function testReadingDataThrowsExceptionOnInvalidLength()
     {
-        $resource = $this->getResource();
-        $stream = Stream::fromResource($resource);
+        $resourceHelper = new ResourceHelper();
+        $resource = $resourceHelper->getResource();
 
+        $stream = Stream::fromResource($resource);
         $stream->read(0);
     }
 
@@ -349,7 +336,11 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      */
     public function testReadingData()
     {
-        $resource = $this->getResource('contents');
+        $resourceHelper = new ResourceHelper();
+        $resource = $resourceHelper->getResource();
+        fwrite($resource, 'contents');
+        fseek($resource, 0);
+
         $stream = Stream::fromResource($resource);
 
         $this->assertEquals('contents', $stream->read(8));
@@ -363,10 +354,11 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      */
     public function testWritingDataThrowsExceptionOnClosedStream()
     {
-        $resource = $this->getResource();
-        $stream = Stream::fromResource($resource);
-        fclose($resource);
+        $resourceHelper = new ResourceHelper();
+        $resource = $resourceHelper->getResource();
 
+        $stream = Stream::fromResource($resource);
+        $stream->close();
         $stream->write('contents');
     }
 
@@ -378,13 +370,16 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      */
     public function testWritingDataThrowsExceptionOnNonWritableStream()
     {
+        $resourceHelper = new ResourceHelper();
+        $resource = $resourceHelper->getResource();
+
         $streamMock = $this->getMockBuilder('GravityMedia\Stream\Stream')
             ->setMethods(['getResource', 'isWritable'])
             ->getMock();
 
         $streamMock->expects($this->once())
             ->method('getResource')
-            ->will($this->returnValue($this->getResource()));
+            ->will($this->returnValue($resource));
 
         $streamMock->expects($this->once())
             ->method('isWritable')
@@ -402,9 +397,10 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      */
     public function testWritingDataThrowsExceptionOnInvalidData()
     {
-        $resource = $this->getResource();
-        $stream = Stream::fromResource($resource);
+        $resourceHelper = new ResourceHelper();
+        $resource = $resourceHelper->getResource();
 
+        $stream = Stream::fromResource($resource);
         $stream->write(new \stdClass());
     }
 
@@ -413,7 +409,9 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      */
     public function testWritingData()
     {
-        $resource = $this->getResource();
+        $resourceHelper = new ResourceHelper();
+        $resource = $resourceHelper->getResource();
+
         $stream = Stream::fromResource($resource);
 
         $this->assertEquals(8, $stream->write('contents'));
@@ -427,10 +425,11 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      */
     public function testTruncatingThrowsExceptionOnClosedStream()
     {
-        $resource = $this->getResource();
-        $stream = Stream::fromResource($resource);
-        fclose($resource);
+        $resourceHelper = new ResourceHelper();
+        $resource = $resourceHelper->getResource();
 
+        $stream = Stream::fromResource($resource);
+        $stream->close();
         $stream->truncate(0);
     }
 
@@ -442,13 +441,16 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      */
     public function testTruncatingThrowsExceptionOnNonWritableStream()
     {
+        $resourceHelper = new ResourceHelper();
+        $resource = $resourceHelper->getResource();
+
         $streamMock = $this->getMockBuilder('GravityMedia\Stream\Stream')
             ->setMethods(['getResource', 'isWritable'])
             ->getMock();
 
         $streamMock->expects($this->once())
             ->method('getResource')
-            ->will($this->returnValue($this->getResource()));
+            ->will($this->returnValue($resource));
 
         $streamMock->expects($this->once())
             ->method('isWritable')
@@ -463,11 +465,13 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      */
     public function testTruncating()
     {
-        $resource = $this->getResource();
+        $resourceHelper = new ResourceHelper();
+        $resource = $resourceHelper->getResource();
+
         $stream = Stream::fromResource($resource);
 
         $this->assertTrue($stream->truncate(8));
-        $this->assertEquals(str_repeat("\x00", 8), stream_get_contents($resource));
+        $this->assertEquals("\x00\x00\x00\x00\x00\x00\x00\x00", stream_get_contents($resource));
     }
 
     /**
@@ -475,7 +479,9 @@ class StreamTest extends \PHPUnit_Framework_TestCase
      */
     public function testCloseStreamResource()
     {
-        $resource = $this->getResource();
+        $resourceHelper = new ResourceHelper();
+        $resource = $resourceHelper->getResource();
+
         $stream = Stream::fromResource($resource);
 
         $this->assertTrue($stream->close());
