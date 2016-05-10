@@ -1,9 +1,12 @@
 {
     "name": "gravitymedia/stream",
-    "description": "Stream is an object oriented stream library for PHP",
+    "description": "Stream is an object oriented library for reading and writing binary streams in PHP.",
     "keywords": [
         "gravitymedia",
-        "stream"
+        "stream",
+        "binary",
+        "fread",
+        "fwrite"
     ],
     "homepage": "https://github.com/GravityMedia/Stream",
     "license": "MIT",
@@ -16,7 +19,7 @@
         }
     ],
     "require": {
-        "php": ">=5.6"
+        "php": "^5.6 || ^7.0"
     },
     "require-dev": {
         "phing/phing": "^2.14",
@@ -34,10 +37,6 @@
         "psr-4": {
             "GravityMedia\\StreamTest\\": "tests/src/"
         }
-    },
-    "scripts": {
-        "test": "php vendor/bin/phing test",
-        "doc": "php vendor/bin/phing doc"
     },
     "extra": {
         "branch-alias": {
