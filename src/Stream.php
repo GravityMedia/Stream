@@ -63,13 +63,13 @@ class Stream implements StreamInterface
      *
      * @param resource $resource
      *
-     * @return StreamInterface
+     * @return self
      */
     public static function fromResource($resource)
     {
-        $instance = new static();
+        $stream = new static();
 
-        return $instance->bindResource($resource);
+        return $stream->bindResource($resource);
     }
 
     /**
