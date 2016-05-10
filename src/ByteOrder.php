@@ -5,12 +5,12 @@
  * @author Daniel Schröder <daniel.schroeder@gravitymedia.de>
  */
 
-namespace GravityMedia\Stream\ByteOrder;
+namespace GravityMedia\Stream;
 
 /**
  * Byte order enum
  *
- * @package GravityMedia\Stream\ByteOrder
+ * @package GravityMedia\Stream
  */
 class ByteOrder
 {
