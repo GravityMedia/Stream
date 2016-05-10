@@ -8,7 +8,7 @@
 [![Total Downloads](https://img.shields.io/packagist/dt/gravitymedia/stream.svg)](https://packagist.org/packages/gravitymedia/stream)
 [![Dependency Status](https://img.shields.io/versioneye/d/php/gravitymedia:stream.svg)](https://www.versioneye.com/user/projects/54f76e264f31083e1b0017e2)
 
-Stream is an object oriented stream library for PHP.
+Stream is an object oriented library for reading and writing binary streams in PHP.
 
 ## Requirements
 
@@ -24,7 +24,7 @@ Install Composer in your project:
 $ curl -s https://getcomposer.org/installer | php
 ```
 
-Require the package via Composer:
+Add the package to your `composer.json` and install it via Composer:
 
 ```bash
 $ php composer.phar require gravitymedia/stream
@@ -45,30 +45,36 @@ $resource = fopen('php://temp', 'r+');
 // create new stream object
 $stream = Stream::fromResource($resource);
 
-// write some random data
-$stream->write('some random data...');
+// write some data
+$stream->write("\x63\x6f\x6e\x74\x65\x6e\x74\x73");
 
-// truncate random data
-$stream->truncate(16);
+// seek a position
+$stream->seek(4);
+
+// print 32 bit unsigned integer
+print $stream->readUInt32() . PHP_EOL;
 
 // rewind stream
 $stream->rewind();
 
-// print "some random data"
+// print the data previously written
 while (!$stream->eof()) {
-    print $stream->read();
+    print $stream->read(1);
 }
 print PHP_EOL;
-
-// seek a position
-$stream->seek(5);
 
 // print position
 print $stream->tell() . PHP_EOL;
 
-// print "random data"
+// rewind stream
+$stream->rewind();
+
+// truncate random data
+$stream->truncate(7);
+
+// print the truncated data
 while (!$stream->eof()) {
-    print $stream->read();
+    print $stream->read(1);
 }
 print PHP_EOL;
 ```
@@ -84,7 +90,7 @@ $ php composer.phar install
 Run the test suite:
 
 ```bash
-$ php composer.phar test
+$ php vendor/bin/phing test
 ```
 
 ## Generating documentation
@@ -98,7 +104,7 @@ $ php composer.phar install
 Generate the documentation to the `build/docs` directory:
 
 ```bash
-$ php composer.phar doc
+$ php vendor/bin/phing doc
 ```
 
 ## Contributing
