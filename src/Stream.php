@@ -209,7 +209,7 @@ class Stream
         if (null === static::$machineByteOrder) {
             static::$machineByteOrder = ByteOrder::BIG_ENDIAN;
 
-            list(, $value) = unpack('s', "\x01\x00");
+            list(, $value) = @unpack('s', "\x01\x00");
             if (1 === $value) {
                 static::$machineByteOrder = ByteOrder::LITTLE_ENDIAN;
             }
@@ -397,7 +397,7 @@ class Stream
      */
     public function readInt8()
     {
-        list(, $value) = unpack('c', $this->read(1));
+        list(, $value) = @unpack('c', $this->read(1));
         return $value;
     }
 
@@ -412,7 +412,7 @@ class Stream
      */
     public function readUInt8()
     {
-        list(, $value) = unpack('C', $this->read(1));
+        list(, $value) = @unpack('C', $this->read(1));
         return $value;
     }
 
@@ -427,7 +427,7 @@ class Stream
      */
     public function readInt16()
     {
-        list(, $value) = unpack('s', $this->alignData($this->read(2)));
+        list(, $value) = @unpack('s', $this->alignData($this->read(2)));
         return $value;
     }
 
@@ -453,7 +453,7 @@ class Stream
                 $format = 'S';
         }
 
-        list(, $value) = unpack($format, $this->read(2));
+        list(, $value) = @unpack($format, $this->read(2));
         return $value;
     }
 
@@ -488,7 +488,7 @@ class Stream
      */
     public function readUInt24()
     {
-        $values = unpack('C3', $this->alignData($this->read(3)));
+        $values = @unpack('C3', $this->alignData($this->read(3)));
         return $values[1] | $values[2] << 8 | $values[3] << 16;
     }
 
@@ -503,7 +503,7 @@ class Stream
      */
     public function readInt32()
     {
-        list(, $value) = unpack('l', $this->alignData($this->read(4)));
+        list(, $value) = @unpack('l', $this->alignData($this->read(4)));
         return $value;
     }
 
@@ -529,7 +529,7 @@ class Stream
                 $format = 'L';
         }
 
-        list(, $value) = unpack($format, $this->read(4));
+        list(, $value) = @unpack($format, $this->read(4));
         return $value;
     }
 
@@ -564,7 +564,7 @@ class Stream
      */
     public function readUInt48()
     {
-        $values = unpack('C6', $this->alignData($this->read(6)));
+        $values = @unpack('C6', $this->alignData($this->read(6)));
         return $values[1] | $values[2] << 8 | $values[3] << 16 | $values[4] << 24 | $values[5] << 32 | $values[6] << 40;
     }
 
@@ -579,7 +579,7 @@ class Stream
      */
     public function readInt64()
     {
-        list(, $value) = unpack('q', $this->alignData($this->read(8)));
+        list(, $value) = @unpack('q', $this->alignData($this->read(8)));
         return $value;
     }
 
@@ -605,7 +605,7 @@ class Stream
                 $format = 'Q';
         }
 
-        list(, $value) = unpack($format, $this->read(8));
+        list(, $value) = @unpack($format, $this->read(8));
         return $value;
     }
 
